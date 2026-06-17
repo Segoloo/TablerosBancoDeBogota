@@ -74,8 +74,8 @@ class DashboardView {
                 <span class="sidebar-label">Inicio Hub</span>
               </div>
               
-              <!-- Tablero Indicadores CB (Deshabilitado temporalmente) -->
-              <div class="sidebar-item disabled" title="Próximamente">
+              <!-- Tablero Indicadores CB -->
+              <div class="sidebar-item" data-board="indicadores">
                 <span class="sidebar-icon">📈</span>
                 <span class="sidebar-label">Indicadores CB</span>
               </div>
@@ -192,6 +192,29 @@ class DashboardView {
         if (this.boardSelectCallback) this.boardSelectCallback(boardKey);
       });
     });
+
+    // Evento Selección de Tableros desde el Home Hub (Hub Cards)
+    this.container.addEventListener('click', (e) => {
+      const card = e.target.closest('.hub-card:not(.disabled)');
+      if (card) {
+        const boardKey = card.getAttribute('data-board');
+        if (boardKey) {
+          // Activar visualmente en el sidebar
+          const sidebarItem = this.container.querySelector(`.sidebar-item[data-board="${boardKey}"]`);
+          if (sidebarItem) {
+            menuItems.forEach(i => i.classList.remove('active'));
+            sidebarItem.classList.add('active');
+            
+            // Actualizar título de Topbar
+            const titleEl = document.getElementById('topbar-active-title');
+            if (titleEl) {
+              titleEl.textContent = sidebarItem.querySelector('.sidebar-label').textContent;
+            }
+          }
+          if (this.boardSelectCallback) this.boardSelectCallback(boardKey);
+        }
+      }
+    });
   }
 
   // Colapsar / Expandir barra lateral
@@ -279,12 +302,12 @@ class DashboardView {
         </div>
 
         <div class="home-hub-cards">
-          <!-- Card de Indicadores CB (Deshabilitado temporalmente) -->
-          <div class="hub-card disabled">
+          <!-- Card de Indicadores CB -->
+          <div class="hub-card" data-board="indicadores">
             <div class="hub-card-icon">📈</div>
             <h3 class="hub-card-title">Indicadores CB</h3>
-            <p class="hub-card-desc">Control detallado de Cierres de Corresponsal Bancario, gestión de Papelería, control de Implementaciones y reporte de Incidentes de soporte.</p>
-            <div class="hub-card-badge">Próximamente</div>
+            <p class="hub-card-desc">Control operativo y analítico de capacitación, instalación de publicidad y desinstalaciones de material en corresponsales bancarios.</p>
+            <div class="hub-card-badge" style="background: rgba(0, 135, 110, 0.2); color: var(--bdb-green-prem); border-color: rgba(0, 135, 110, 0.4);">Activo</div>
           </div>
 
           <!-- Mocks de otros tableros -->

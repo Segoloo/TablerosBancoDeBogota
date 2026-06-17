@@ -7,7 +7,7 @@ class DashboardModel {
     // Filtros del tablero "Indicadores CB" (Slicers)
     this.filters = {
       depto: '',
-      red: '',
+      zona: '', // Renombrado de Red/Coordinador a Zona Lineacom
       estado: '',
       sla: '',
       tecnico: ''
@@ -15,20 +15,18 @@ class DashboardModel {
 
     // Términos de búsqueda por sub-sección
     this.searchTerms = {
-      cierres: '',
-      papeleria: '',
-      'otras-oc': '',
       implementacion: '',
-      incidentes: ''
+      publicidad: '',
+      capacitacion: '',
+      desinstalacion: ''
     };
 
     // Paginación por sub-sección
     this.pages = {
-      cierres: 1,
-      papeleria: 1,
-      'otras-oc': 1,
       implementacion: 1,
-      incidentes: 1
+      publicidad: 1,
+      capacitacion: 1,
+      desinstalacion: 1
     };
 
     this.pageSize = 50;
@@ -72,74 +70,18 @@ class DashboardModel {
       if (Array.isArray(data.implementacion.abiertos)) data.implementacion.abiertos.forEach(r => r._is_abierto = true);
     }
     
-    // 2. Incidentes
-    if (data.incidentes) {
-      const cleanIncidentList = (list, isAbierto) => {
-        if (!Array.isArray(list)) return;
-        list.forEach(r => {
-          r._is_abierto = isAbierto;
-          // Limpiar llaves vacías
-          for (let k in r) {
-            if (k.trim() === '') {
-              const val = r[k];
-              if (val !== undefined && val !== null && val !== '' && val !== 'null' && String(val).toLowerCase() !== 'null') {
-                r['TICKET'] = val;
-              }
-              delete r[k];
-            }
-          }
-        });
-      };
-      cleanIncidentList(data.incidentes.cerrados, false);
-      cleanIncidentList(data.incidentes.abiertos, true);
+    // 2. Desinstalación
+    if (data.desinstalacion) {
+      if (Array.isArray(data.desinstalacion.bd)) data.desinstalacion.bd.forEach(r => r._is_abierto = false);
+      if (Array.isArray(data.desinstalacion.abiertos)) data.desinstalacion.abiertos.forEach(r => r._is_abierto = true);
     }
-    
-    // 3. Órdenes de Compra (Cierres, Papelería, Otras OC)
-    if (data.oc_wompi) {
-      if (Array.isArray(data.oc_wompi.cierres)) data.oc_wompi.cierres.forEach(r => r._is_abierto = false);
-      if (Array.isArray(data.oc_wompi.cierres_abiertos)) data.oc_wompi.cierres_abiertos.forEach(r => r._is_abierto = true);
-
-      if (Array.isArray(data.oc_wompi.papeleria)) data.oc_wompi.papeleria.forEach(r => r._is_abierto = false);
-      if (Array.isArray(data.oc_wompi.papeleria_abiertos)) data.oc_wompi.papeleria_abiertos.forEach(r => r._is_abierto = true);
-
-      if (Array.isArray(data.oc_wompi.otras_oc)) data.oc_wompi.otras_oc.forEach(r => r._is_abierto = false);
-      if (Array.isArray(data.oc_wompi.otras_oc_abiertos)) data.oc_wompi.otras_oc_abiertos.forEach(r => r._is_abierto = true);
-    }
-
-    // Normalizar 'LARED' / 'RED' a 'WOMPI' en las columnas de responsabilidad para consistencia de marca
-    const sections = [
-      { key: 'implementacion', lists: ['bd', 'abiertos'], cols: ['OBSERVACIÓN ESTANDAR', 'OBSERVACION ESTANDAR'] },
-      { key: 'incidentes', lists: ['cerrados', 'abiertos'], cols: ['RESPONSABLE DE INCUMPLIMIENTO'] },
-      { key: 'oc_wompi', lists: ['cierres', 'cierres_abiertos', 'papeleria', 'papeleria_abiertos', 'otras_oc', 'otras_oc_abiertos'], cols: ['RESPONSABLE INCUMPLIMIENTO'] }
-    ];
-
-    sections.forEach(sec => {
-      const parent = data[sec.key];
-      if (parent) {
-        sec.lists.forEach(listKey => {
-          const list = parent[listKey];
-          if (Array.isArray(list)) {
-            list.forEach(r => {
-              sec.cols.forEach(col => {
-                if (r[col]) {
-                  const valStr = r[col].toString().trim().toUpperCase();
-                  if (valStr === 'LARED' || valStr === 'RED') {
-                    r[col] = 'WOMPI';
-                  }
-                }
-              });
-            });
-          }
-        });
-      }
-    });
   }
 
   // Contar número total de registros
   getTotalRows(data) {
     let count = 0;
     if (!data) return 0;
-    ['implementacion', 'incidentes', 'oc_wompi'].forEach(s => {
+    ['implementacion', 'desinstalacion'].forEach(s => {
       const sec = data[s];
       if (!sec) return;
       Object.values(sec).forEach(arr => {
@@ -200,15 +142,12 @@ class DashboardModel {
     let startVal = null;
     let endVal = null;
     
-    if (tab === 'cierres' || tab === 'papeleria' || tab === 'otras-oc') {
+    if (tab === 'desinstalacion') {
       startVal = r['FECHA DE APERTURA (DD/MM/AAAA)'];
       endVal = r['FECHA DE CIERRE (DD/MM/AAAA)'];
-    } else if (tab === 'implementacion') {
+    } else {
       startVal = r['FECHA LISTA'];
       endVal = r['FECHA DE FIN'];
-    } else if (tab === 'incidentes') {
-      startVal = r['FECHA APERTURA DEL INCIDENTE (DD/MM/AAAA)'];
-      endVal = r['FECHA DE CIERRE (DD/MM/AAAA)'];
     }
     
     return {
@@ -220,12 +159,10 @@ class DashboardModel {
   // Calcular días de retraso con respecto a la fecha límite
   getDiasPostVencimiento(r, tab) {
     let deadlineVal = null;
-    if (tab === 'cierres' || tab === 'papeleria' || tab === 'otras-oc') {
+    if (tab === 'desinstalacion') {
       deadlineVal = r['FECHA DE VENCIMIENTO (DD/MM/AAAA)'];
-    } else if (tab === 'implementacion') {
+    } else {
       deadlineVal = r['FECHA LIMITE EXTRAORDINARIA'] || r['FECHA LIMITE'];
-    } else if (tab === 'incidentes') {
-      deadlineVal = r['FECHA VENCIMIENTO DEL INCIDENTE'];
     }
     const deadline = this.parseDate(deadlineVal);
     if (!deadline) return null;
@@ -235,12 +172,10 @@ class DashboardModel {
       refDate = new Date();
     } else {
       let closeVal = null;
-      if (tab === 'cierres' || tab === 'papeleria' || tab === 'otras-oc') {
+      if (tab === 'desinstalacion') {
         closeVal = r['FECHA DE CIERRE (DD/MM/AAAA)'];
-      } else if (tab === 'implementacion') {
+      } else {
         closeVal = r['FECHA DE FIN'];
-      } else if (tab === 'incidentes') {
-        closeVal = r['FECHA DE CIERRE (DD/MM/AAAA)'];
       }
       refDate = this.parseDate(closeVal);
       if (!refDate) refDate = new Date();
@@ -250,22 +185,22 @@ class DashboardModel {
     
     // Forzar mínimo de 1 día de retraso si el indicador dice que no cumple SLA
     if (dias <= 0) {
-      const sla = (r['DENTRO DE LOS SLA'] || r['CUMPLE SLA'] || r['DENTRO DE LOS SLAS'] || '').toString().toUpperCase().trim();
+      const sla = (r['DENTRO DE LOS SLA'] || r['CUMPLE SLA'] || '').toString().toUpperCase().trim();
       if (sla === 'NO') return 1;
       return dias;
     }
     return dias;
   }
 
-  // Compara si la columna de responsable coincide con WOMPI o LINEACOM
+  // Compara si la columna de responsable coincide con ENTIDAD o LINEACOM
   isSameResp(target, current) {
     if (!target || !current) return false;
     const a = target.toString().toUpperCase().trim().replace(/[\s\-_]/g, '');
     const b = current.toString().toUpperCase().trim().replace(/[\s\-_]/g, '');
     
-    const isWompiA = (a === 'WOMPI' || a === 'LARED' || a === 'RED');
-    const isWompiB = (b === 'WOMPI' || b === 'LARED' || b === 'RED');
-    if (isWompiA && isWompiB) return true;
+    const isEntidadA = (a === 'ENTIDAD' || a === 'BANCO' || a === 'BDB' || a === 'CLIENTE' || a === 'AVAL');
+    const isEntidadB = (b === 'ENTIDAD' || b === 'BANCO' || b === 'BDB' || b === 'CLIENTE' || b === 'AVAL');
+    if (isEntidadA && isEntidadB) return true;
     
     const isLineaA = (a === 'LINEA' || a === 'LINEACOM' || a === 'LINEACOMUNICACIONES');
     const isLineaB = (b === 'LINEA' || b === 'LINEACOM' || b === 'LINEACOMUNICACIONES');
@@ -285,10 +220,10 @@ class DashboardModel {
         if (dep !== slicers.depto.toUpperCase()) return false;
       }
 
-      // 2. Filtro Red/Cliente
-      if (slicers.red) {
-        const redVal = (r['RED'] || r['GRUPO'] || '').toString().trim().toUpperCase();
-        if (redVal !== slicers.red.toUpperCase()) return false;
+      // 2. Filtro Zona Lineacom
+      if (slicers.zona) {
+        const zonaVal = (r['ZONA LINEACOM'] || r['COORDINADOR ENCARGADO'] || '').toString().trim().toUpperCase();
+        if (zonaVal !== slicers.zona.toUpperCase()) return false;
       }
 
       // 3. Filtro Estado (Abierto / Cerrado)
@@ -300,7 +235,7 @@ class DashboardModel {
 
       // 4. Filtro SLA
       if (slicers.sla) {
-        const field = tab === 'implementacion' ? 'CUMPLE SLA' : (tab === 'incidentes' ? 'DENTRO DE LOS SLAS' : 'DENTRO DE LOS SLA');
+        const field = (tab === 'desinstalacion') ? 'DENTRO DE LOS SLA' : 'CUMPLE SLA';
         const val = (r[field] || '').toString().trim().toUpperCase();
         if (slicers.sla.toUpperCase() !== val) return false;
       }

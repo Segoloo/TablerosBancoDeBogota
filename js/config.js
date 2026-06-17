@@ -1,7 +1,7 @@
 'use strict';
 
 const CONFIG = {
-  // MSAL Config (Mismas credenciales y App Registration que el tablero de Wompi)
+  // MSAL Config (Mismas credenciales y App Registration)
   msal: {
     auth: {
       clientId: 'febe226c-0265-4fb2-b34e-3beebbb9fee8',
@@ -22,7 +22,7 @@ const CONFIG = {
   
   // URLs de Datos (Indicadores)
   dataSources: {
-    indicadores: 'indicadores_wompi.json.gz'
+    indicadores: 'indicadores_bancodebogota.json.gz'
   }
 };
 
