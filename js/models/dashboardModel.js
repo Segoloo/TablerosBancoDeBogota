@@ -10,7 +10,10 @@ class DashboardModel {
       zona: '', // Renombrado de Red/Coordinador a Zona Lineacom
       estado: '',
       sla: '',
-      tecnico: ''
+      tecnico: '',
+      punto: '', // Filtro por Código de Punto (ID Sitio)
+      ta: '',    // Filtro por Código de Tarea (TA)
+      fo: ''     // Filtro por Código de Formulario (FO)
     };
 
     // Términos de búsqueda por sub-sección
@@ -244,6 +247,26 @@ class DashboardModel {
       if (slicers.tecnico) {
         const tec = (r['TECNICO'] || r['INGENIERO DE CAMPO'] || r['TÉCNICO'] || '').toString().trim().toUpperCase();
         if (tec !== slicers.tecnico.toUpperCase()) return false;
+      }
+
+      // 5.1. Filtro por Código de Punto (ID Sitio)
+      if (slicers.punto) {
+        const puntoVal = (r['ID SITIO'] || '').toString().trim().toUpperCase();
+        if (!puntoVal.includes(slicers.punto.toUpperCase())) return false;
+      }
+
+      // 5.2. Filtro por Código de Tarea (TA)
+      if (slicers.ta) {
+        const taVal = (r['CODIGO_TAREA'] || r['NRO PEDIDO / ORDEN DE COMPRA'] || '').toString().trim().toUpperCase();
+        if (!taVal.includes(slicers.ta.toUpperCase())) return false;
+      }
+
+      // 5.3. Filtro por Código de Formulario (FO)
+      if (slicers.fo) {
+        if (!Array.isArray(r['FORMS'])) return false;
+        const foVal = slicers.fo.trim().toUpperCase();
+        const hasFO = r['FORMS'].some(f => (f['FORM_CODE'] || '').toString().trim().toUpperCase().includes(foVal));
+        if (!hasFO) return false;
       }
 
       // 6. Búsqueda de texto libre

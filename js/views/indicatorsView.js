@@ -7,6 +7,7 @@ class IndicatorsView {
     
     this.activeSubTab = 'implementacion'; // Tab por defecto: Cap. y Publicidad
     this.charts = {}; // Almacén de instancias de Chart.js
+    this.currentPageRows = []; // Almacén de registros de la página activa
     
     // Callbacks del controlador
     this.filterChangeCallback = null;
@@ -94,6 +95,19 @@ class IndicatorsView {
                 <option value="">Todos</option>
               </select>
             </div>
+            <!-- Nuevos Filtros Avanzados -->
+            <div class="filter-group">
+              <label>Código de Punto (ID Sitio)</label>
+              <input type="text" id="txtPunto" placeholder="Ej. 12345" class="table-search-box" style="width: 100%;">
+            </div>
+            <div class="filter-group">
+              <label>Código de Tarea (TA)</label>
+              <input type="text" id="txtTA" placeholder="Ej. T-1234" class="table-search-box" style="width: 100%;">
+            </div>
+            <div class="filter-group">
+              <label>Código de Formulario (FO)</label>
+              <input type="text" id="txtFO" placeholder="Ej. FO-1234" class="table-search-box" style="width: 100%;">
+            </div>
             <div class="filter-actions">
               <button class="btn-apply-filters" id="btnApplyFilters">✦ Filtrar</button>
               <button class="btn-reset-filters" id="btnResetFilters">↺ Reiniciar</button>
@@ -115,7 +129,7 @@ class IndicatorsView {
     this.renderActiveSubTab();
   }
 
-  // Carga dinámica de listas desplegables basadas en los datos
+  // Carga dinámica de listas desplegables y cajas de texto basadas en los filtros del modelo
   populateFilters(data) {
     if (!data) return;
 
@@ -172,6 +186,14 @@ class IndicatorsView {
     if (selEstado) selEstado.value = this.model.filters.estado;
     const selSLA = document.getElementById('selSLA');
     if (selSLA) selSLA.value = this.model.filters.sla;
+
+    // Sincronizar nuevos filtros de texto
+    const txtPunto = document.getElementById('txtPunto');
+    if (txtPunto) txtPunto.value = this.model.filters.punto;
+    const txtTA = document.getElementById('txtTA');
+    if (txtTA) txtTA.value = this.model.filters.ta;
+    const txtFO = document.getElementById('txtFO');
+    if (txtFO) txtFO.value = this.model.filters.fo;
   }
 
   setupEvents() {
@@ -195,7 +217,10 @@ class IndicatorsView {
         zona: document.getElementById('selZona')?.value || '',
         estado: document.getElementById('selEstado')?.value || '',
         sla: document.getElementById('selSLA')?.value || '',
-        tecnico: document.getElementById('selTecnico')?.value || ''
+        tecnico: document.getElementById('selTecnico')?.value || '',
+        punto: document.getElementById('txtPunto')?.value || '',
+        ta: document.getElementById('txtTA')?.value || '',
+        fo: document.getElementById('txtFO')?.value || ''
       };
     };
 
@@ -205,7 +230,7 @@ class IndicatorsView {
     });
 
     document.getElementById('btnResetFilters')?.addEventListener('click', () => {
-      this.model.filters = { depto: '', zona: '', estado: '', sla: '', tecnico: '' };
+      this.model.filters = { depto: '', zona: '', estado: '', sla: '', tecnico: '', punto: '', ta: '', fo: '' };
       
       // Resetear inputs visualmente
       const selDepto = document.getElementById('selDepto'); if (selDepto) selDepto.value = '';
@@ -213,6 +238,9 @@ class IndicatorsView {
       const selEstado = document.getElementById('selEstado'); if (selEstado) selEstado.value = '';
       const selSLA = document.getElementById('selSLA'); if (selSLA) selSLA.value = '';
       const selTecnico = document.getElementById('selTecnico'); if (selTecnico) selTecnico.value = '';
+      const txtPunto = document.getElementById('txtPunto'); if (txtPunto) txtPunto.value = '';
+      const txtTA = document.getElementById('txtTA'); if (txtTA) txtTA.value = '';
+      const txtFO = document.getElementById('txtFO'); if (txtFO) txtFO.value = '';
       
       if (this.filterChangeCallback) this.filterChangeCallback();
     });
@@ -241,7 +269,6 @@ class IndicatorsView {
       rawList = (data.desinstalacion?.bd || []).concat(data.desinstalacion?.abiertos || []);
       slaField = 'DENTRO DE LOS SLA';
     } else {
-      // implementacion, publicidad, capacitacion usan la lista general de implementacion
       if (this.activeSubTab === 'implementacion') {
         titleTab = 'Capacitación y Publicidad';
       } else if (this.activeSubTab === 'publicidad') {
@@ -384,7 +411,7 @@ class IndicatorsView {
       </div>
     `;
 
-    // 1. Dibujar Tarjetas de KPIs
+    // 1. Dibujar Tarjetas de KPIs y bindear clicks clickeables
     this.renderKPIs(filteredRows, slaField, respField);
 
     // 2. Inicializar Gráficos
@@ -393,7 +420,7 @@ class IndicatorsView {
     // 3. Dibujar Tabla y Paginador
     this.renderTable(filteredRows);
 
-    // 4. Configurar eventos de la tabla (búsqueda, paginador, exportación)
+    // 4. Configurar eventos de la tabla (búsqueda, paginador, exportación y apertura de Wizard)
     this.setupTableEvents(filteredRows);
   }
 
@@ -421,7 +448,6 @@ class IndicatorsView {
     const pctSla = total ? ((cumpleSlaCount / total) * 100).toFixed(1) + '%' : '100.0%';
 
     // Calcular SLA Ajustado (excluyendo retrasos atribuibles a la ENTIDAD u otros externos)
-    // Es decir, solo las fallas atribuidas explícitamente a LINEACOM reducen este SLA.
     const fallasLinea = rows.filter(r => 
       (r[slaField] || '').toString().toUpperCase().trim() === 'NO' &&
       this.model.isSameResp('LINEACOM', r[respField])
@@ -435,12 +461,10 @@ class IndicatorsView {
     const cumpleAjustado = total - fallasLinea;
     const pctAjustado = total ? ((cumpleAjustado / total) * 100).toFixed(1) + '%' : '100.0%';
 
-    const fallasOtros = total - cumpleSlaCount - fallasLinea - fallasEntidad;
-
     // HTML de las tarjetas
     container.innerHTML = `
       <!-- Total Registros -->
-      <div class="kpi-card-dashboard">
+      <div class="kpi-card-dashboard clickable-kpi" id="kpiTotalCard" title="Ver lista completa">
         <div class="kpi-icon-db">📋</div>
         <div class="kpi-val-db" style="color: var(--bdb-gold);">${total.toLocaleString('es-CO')}</div>
         <div class="kpi-lbl-db">Total Actividades</div>
@@ -448,7 +472,7 @@ class IndicatorsView {
       </div>
 
       <!-- Cumplimiento General SLA -->
-      <div class="kpi-card-dashboard">
+      <div class="kpi-card-dashboard clickable-kpi" id="kpiSlaCard" title="Ver actividades en plazo">
         <div class="kpi-icon-db">⏱️</div>
         <div class="kpi-val-db" style="color: var(--bdb-green-prem);">${pctSla}</div>
         <div class="kpi-lbl-db">Cumplimiento SLA</div>
@@ -456,7 +480,7 @@ class IndicatorsView {
       </div>
 
       <!-- Cumplimiento Ajustado -->
-      <div class="kpi-card-dashboard premium-kpi">
+      <div class="kpi-card-dashboard premium-kpi clickable-kpi" id="kpiAjustadoCard" title="Ver SLA Ajustado (excluye entidad/externos)">
         <div class="kpi-icon-db glow-icon">🏆</div>
         <div class="kpi-val-db glow-text" style="color: #fff;">${pctAjustado}</div>
         <div class="kpi-lbl-db" style="color: var(--bdb-gold); font-weight: 700;">SLA Ajustado</div>
@@ -464,13 +488,36 @@ class IndicatorsView {
       </div>
 
       <!-- Responsabilidad de fallas -->
-      <div class="kpi-card-dashboard">
+      <div class="kpi-card-dashboard clickable-kpi" id="kpiFallasCard" title="Ver fallas y retrasos registrados">
         <div class="kpi-icon-db">⚠</div>
         <div class="kpi-val-db" style="color: var(--bdb-red-sym);">${(fallasLinea + fallasEntidad).toLocaleString('es-CO')}</div>
         <div class="kpi-lbl-db">Fallas Registradas</div>
         <div class="kpi-sub-db" style="font-size: 10px;">Línea: ${fallasLinea.toLocaleString('es-CO')} · Entidad: ${fallasEntidad.toLocaleString('es-CO')}</div>
       </div>
     `;
+
+    // Bindear clicks interactivos a las tarjetas KPI
+    document.getElementById('kpiTotalCard')?.addEventListener('click', () => {
+      this.openKpiModal('Total de Actividades', rows);
+    });
+
+    document.getElementById('kpiSlaCard')?.addEventListener('click', () => {
+      const records = rows.filter(r => (r[slaField] || '').toString().toUpperCase() === 'SI');
+      this.openKpiModal('Actividades dentro de SLA', records);
+    });
+
+    document.getElementById('kpiAjustadoCard')?.addEventListener('click', () => {
+      const records = rows.filter(r => 
+        (r[slaField] || '').toString().toUpperCase() === 'SI' || 
+        !this.model.isSameResp('LINEACOM', r[respField])
+      );
+      this.openKpiModal('Actividades que Cumplen SLA Ajustado', records);
+    });
+
+    document.getElementById('kpiFallasCard')?.addEventListener('click', () => {
+      const records = rows.filter(r => (r[slaField] || '').toString().toUpperCase() === 'NO');
+      this.openKpiModal('Fallas y Retrasos Registrados', records);
+    });
   }
 
   // Genera los gráficos de Chart.js
@@ -796,7 +843,6 @@ class IndicatorsView {
       const canvasFact = document.getElementById('chartFacturablesGarantias');
       if (canvasFact) {
         const total = facturables + garantias;
-        const pctGarantia = total ? ((garantias / total) * 100).toFixed(1) + '%' : '0%';
 
         this.charts.facturables = new Chart(canvasFact, {
           type: 'doughnut',
@@ -906,6 +952,7 @@ class IndicatorsView {
     if (rows.length === 0) {
       container.innerHTML = `<div class="empty-table-state">Sin registros coincidentes con los filtros seleccionados.</div>`;
       document.getElementById('tablePaginationFooter').innerHTML = '';
+      this.currentPageRows = [];
       return;
     }
 
@@ -923,7 +970,6 @@ class IndicatorsView {
         { label: 'Retraso', key: '_retraso' }
       ];
     } else {
-      // implementacion, publicidad, capacitacion
       cols = [
         { label: 'ID Sitio', key: 'ID SITIO' },
         { label: 'Establecimiento', key: 'ESTABLECIMIENTO' },
@@ -942,6 +988,9 @@ class IndicatorsView {
     const startIdx = (currentPage - 1) * this.model.pageSize;
     const endIdx = Math.min(startIdx + this.model.pageSize, rows.length);
     const pageRows = rows.slice(startIdx, endIdx);
+    
+    // Almacenar registros de la página activa para usarlos al hacer clic
+    this.currentPageRows = pageRows;
 
     // Armar tabla HTML
     let tableHtml = `
@@ -955,7 +1004,7 @@ class IndicatorsView {
     `;
 
     pageRows.forEach(r => {
-      tableHtml += '<tr>';
+      tableHtml += '<tr class="clickable-row">';
       cols.forEach(c => {
         let valHtml = '';
         
@@ -1027,7 +1076,7 @@ class IndicatorsView {
     `;
   }
 
-  // Configura los eventos del buscador interno, paginación y exportación a Excel
+  // Configura los eventos del buscador interno, paginación y apertura del Wizard
   setupTableEvents(rows) {
     // 1. Buscador interno de la tabla
     const searchInput = document.getElementById('tableSearchInput');
@@ -1079,6 +1128,362 @@ class IndicatorsView {
         this.exportExcelCallback(rows, `Indicadores_CB_${this.activeSubTab}`);
       }
     });
+
+    // 4. Click en fila de la tabla principal para abrir el Wizard
+    const tableRows = document.querySelectorAll('#tableContentArea .indicators-table tbody tr.clickable-row');
+    tableRows.forEach((tr, idx) => {
+      tr.style.cursor = 'pointer';
+      tr.addEventListener('click', (e) => {
+        if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
+        const record = this.currentPageRows[idx];
+        if (record) {
+          this.openTaskWizard(record);
+        }
+      });
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // MANEJO DE MODALES Y WIZARDS INTERACTIVOS
+  // ══════════════════════════════════════════════════════════════════
+
+  // Abre un modal con el listado de registros de un KPI específico
+  openKpiModal(title, recordsList) {
+    this.closeModal('customKpiModal');
+
+    const overlay = document.createElement('div');
+    overlay.className = 'custom-modal-overlay';
+    overlay.id = 'customKpiModal';
+
+    overlay.innerHTML = `
+      <div class="custom-modal-container">
+        <div class="custom-modal-header">
+          <h3>${title} (${recordsList.length})</h3>
+          <button class="btn-close-modal" id="btnCloseKpiModal">✕</button>
+        </div>
+        <div class="custom-modal-body">
+          <div class="modal-table-wrapper">
+            <table class="modal-table">
+              <thead>
+                <tr>
+                  <th>Código TA</th>
+                  <th>ID Sitio</th>
+                  <th>Establecimiento</th>
+                  <th>Técnico</th>
+                  <th>Estado</th>
+                  <th>SLA</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="modalTableBody">
+                <!-- Se llena dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const tbody = overlay.querySelector('#modalTableBody');
+    if (recordsList.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">No hay registros en esta categoría.</td></tr>`;
+    } else {
+      recordsList.forEach(r => {
+        const tr = document.createElement('tr');
+        const isAb = !!r._is_abierto;
+        const stateBadge = isAb 
+          ? `<span class="badge badge-open">Abierto</span>` 
+          : `<span class="badge badge-closed">Cerrado</span>`;
+        
+        const slaField = this.activeSubTab === 'desinstalacion' ? 'DENTRO DE LOS SLA' : 'CUMPLE SLA';
+        const slaVal = (r[slaField] || '').toString().toUpperCase().trim();
+        const slaBadge = slaVal === 'SI' 
+          ? `<span class="badge badge-sla-ok">Cumple</span>` 
+          : (slaVal === 'NO' ? `<span class="badge badge-sla-fail">Vencido</span>` : `<span class="badge badge-sla-na">N/A</span>`);
+
+        const taCode = r['CODIGO_TAREA'] || r['NRO PEDIDO / ORDEN DE COMPRA'] || '—';
+
+        tr.innerHTML = `
+          <td><strong>${taCode}</strong></td>
+          <td>${r['ID SITIO'] || '—'}</td>
+          <td>${r['ESTABLECIMIENTO'] || r['NOMBRE PUNTO DE ATENCIÓN'] || '—'}</td>
+          <td>${r['TECNICO'] || '—'}</td>
+          <td>${stateBadge}</td>
+          <td>${slaBadge}</td>
+          <td><button class="btn-view-wizard-link">Ver Wizard</button></td>
+        `;
+
+        tr.addEventListener('click', (e) => {
+          this.closeModal('customKpiModal');
+          this.openTaskWizard(r);
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    overlay.querySelector('#btnCloseKpiModal').addEventListener('click', () => {
+      this.closeModal('customKpiModal');
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) this.closeModal('customKpiModal');
+    });
+  }
+
+  // Abre el Wizard detallado de una tarea en específico (TA + FO)
+  openTaskWizard(record) {
+    this.closeModal('customWizardModal');
+
+    const overlay = document.createElement('div');
+    overlay.className = 'custom-modal-overlay';
+    overlay.id = 'customWizardModal';
+
+    const taCode = record['CODIGO_TAREA'] || record['NRO PEDIDO / ORDEN DE COMPRA'] || '—';
+    const estabName = record['ESTABLECIMIENTO'] || record['NOMBRE PUNTO DE ATENCIÓN'] || '—';
+
+    overlay.innerHTML = `
+      <div class="custom-modal-container" style="max-width: 1000px;">
+        <div class="custom-modal-header">
+          <h3>Wizard de Tarea (TA): ${taCode} · ${estabName}</h3>
+          <button class="btn-close-modal" id="btnCloseWizardModal">✕</button>
+        </div>
+        <div class="custom-modal-body">
+          <!-- Wizard Tabs -->
+          <div class="custom-wizard-tabs">
+            <button class="wizard-tab-btn active" id="tabBtnResumen" data-tab="resumen">📋 Resumen TA</button>
+            <button class="wizard-tab-btn" id="tabBtnFormularios" data-tab="formularios">📄 Formularios FO (${Array.isArray(record.FORMS) ? record.FORMS.length : 0})</button>
+          </div>
+
+          <!-- Tab Resumen -->
+          <div class="wizard-tab-panel" id="panelResumen">
+            <div class="wizard-metadata-grid">
+              <div class="metadata-item">
+                <label>Código de Tarea (TA)</label>
+                <span>${taCode}</span>
+              </div>
+              <div class="metadata-item">
+                <label>ID Sitio / Punto</label>
+                <span>${record['ID SITIO'] || '—'}</span>
+              </div>
+              <div class="metadata-item">
+                <label>Establecimiento</label>
+                <span>${estabName}</span>
+              </div>
+              <div class="metadata-item">
+                <label>Ubicación</label>
+                <span>${record['DEPARTAMENTO'] || '—'} · ${record['CIUDAD'] || '—'}</span>
+              </div>
+              <div class="metadata-item">
+                <label>Técnico Encargado</label>
+                <span>${record['TECNICO'] || '—'}</span>
+              </div>
+              <div class="metadata-item">
+                <label>Fecha Solicitud (Lista)</label>
+                <span>${record['FECHA LISTA'] || '—'}</span>
+              </div>
+              <div class="metadata-item">
+                <label>Fecha Límite (Plan fin)</label>
+                <span>${record['FECHA LIMITE'] || record['FECHA DE VENCIMIENTO (DD/MM/AAAA)'] || '—'}</span>
+              </div>
+              <div class="metadata-item">
+                <label>Fecha Ejecución (Fin)</label>
+                <span>${record['FECHA DE FIN'] || record['FECHA DE CIERRE (DD/MM/AAAA)'] || '—'}</span>
+              </div>
+              <div class="metadata-item">
+                <label>Forma de Atención</label>
+                <span>${record['FORMA DE ATENCION'] || '—'}</span>
+              </div>
+              <div class="metadata-item">
+                <label>Estado Visita / Tarea</label>
+                <span>${record['ESTADO DE LA VISITA'] || (record._is_abierto ? 'Abierto' : 'Cerrado')}</span>
+              </div>
+              <div class="metadata-item">
+                <label>Causal Estado / Falla</label>
+                <span>${record['CAUSAL DE ESTADO'] || '—'}</span>
+              </div>
+              <div class="metadata-item">
+                <label>Cumplimiento SLA</label>
+                <span>${(record['CUMPLE SLA'] || record['DENTRO DE LOS SLA'] || '—') === 'SI' ? '✅ Cumple' : '❌ Vencido'}</span>
+              </div>
+              <div class="metadata-item" style="grid-column: 1 / -1;">
+                <label>Responsable de Retraso</label>
+                <span>${record['RESPONSABLE INCUMPLIMIENTO'] || 'Sin retrasos / No aplica'}</span>
+              </div>
+              <div class="metadata-item" style="grid-column: 1 / -1;">
+                <label>Observaciones o Novedades Adicionales</label>
+                <span>${record['OBSERVACIÓN ESTANDAR'] || '—'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Formularios -->
+          <div class="wizard-tab-panel hidden" id="panelFormularios">
+            <div class="wizard-forms-layout">
+              <!-- Sidebar de Formularios -->
+              <div class="wizard-forms-sidebar" id="wizardFormsSidebar">
+                <!-- Se llena dinámicamente -->
+              </div>
+              
+              <!-- Contenido de Formulario Seleccionado -->
+              <div class="wizard-forms-content" id="wizardFormsContent">
+                <!-- Respuestas se renderizan aquí -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Configurar Cambio de Pestañas
+    const tabs = overlay.querySelectorAll('.wizard-tab-btn');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        tabs.forEach(t => t.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+
+        const tabKey = e.currentTarget.getAttribute('data-tab');
+        if (tabKey === 'resumen') {
+          overlay.querySelector('#panelResumen').classList.remove('hidden');
+          overlay.querySelector('#panelFormularios').classList.add('hidden');
+        } else {
+          overlay.querySelector('#panelResumen').classList.add('hidden');
+          overlay.querySelector('#panelFormularios').classList.remove('hidden');
+        }
+      });
+    });
+
+    // Cargar Formularios
+    const formsSidebar = overlay.querySelector('#wizardFormsSidebar');
+    const formsContent = overlay.querySelector('#wizardFormsContent');
+    const forms = record.FORMS || [];
+
+    if (forms.length === 0) {
+      formsSidebar.innerHTML = `<div style="font-size: 11px; color: var(--text-muted);">No hay formularios completados para esta tarea.</div>`;
+      formsContent.innerHTML = `<div style="text-align: center; margin-top: 100px; color: var(--text-muted);">No hay respuestas disponibles.</div>`;
+    } else {
+      // Poblar Sidebar
+      forms.forEach((f, idx) => {
+        const item = document.createElement('button');
+        item.className = `sidebar-form-item ${idx === 0 ? 'active' : ''}`;
+        item.innerHTML = `
+          <span class="form-title">${f.FORM_NAME || 'Formulario'}</span>
+          <span class="form-subtitle">Código: ${f.FORM_CODE || 'FO'}</span>
+        `;
+        item.addEventListener('click', () => {
+          overlay.querySelectorAll('.sidebar-form-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          this.renderFormResponses(f, formsContent);
+        });
+        formsSidebar.appendChild(item);
+      });
+
+      // Botón para mostrar todas las respuestas juntas
+      const btnAll = document.createElement('button');
+      btnAll.className = 'btn-show-all-answers';
+      btnAll.textContent = 'Ver todas las respuestas';
+      btnAll.addEventListener('click', () => {
+        overlay.querySelectorAll('.sidebar-form-item').forEach(i => i.classList.remove('active'));
+        this.renderAllFormResponses(forms, formsContent);
+      });
+      formsSidebar.appendChild(btnAll);
+
+      // Renderizar el primer formulario por defecto
+      this.renderFormResponses(forms[0], formsContent);
+    }
+
+    // Botones de Cierre
+    overlay.querySelector('#btnCloseWizardModal').addEventListener('click', () => {
+      this.closeModal('customWizardModal');
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) this.closeModal('customWizardModal');
+    });
+  }
+
+  // Renderiza respuestas de un formulario específico
+  renderFormResponses(form, container) {
+    const resps = form.RESPUESTAS || {};
+    const entries = Object.entries(resps);
+
+    let html = `
+      <div class="responses-list-container fade-in">
+        <h4 style="font-size: 13px; color: var(--bdb-gold); border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px; margin-bottom: 12px;">
+          Respuestas de: ${form.FORM_NAME} (${form.FORM_CODE})
+        </h4>
+    `;
+
+    if (entries.length === 0) {
+      html += `<div style="text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 50px;">El formulario no contiene respuestas registradas.</div>`;
+    } else {
+      entries.forEach(([q, val]) => {
+        const valUpper = val.toString().toUpperCase().trim();
+        let highlightClass = '';
+        if (valUpper === 'SI' || valUpper === 'SÍ') highlightClass = 'yes-highlight';
+        else if (valUpper === 'NO') highlightClass = 'no-highlight';
+
+        html += `
+          <div class="response-card-item ${highlightClass}">
+            <div class="response-question">${q}</div>
+            <div class="response-answer">${val}</div>
+          </div>
+        `;
+      });
+    }
+
+    html += `</div>`;
+    container.innerHTML = html;
+  }
+
+  // Renderiza todas las respuestas unificadas
+  renderAllFormResponses(forms, container) {
+    let html = `
+      <div class="responses-list-container fade-in">
+        <h4 style="font-size: 13px; color: var(--bdb-gold); border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px; margin-bottom: 12px;">
+          Consolidado de Formularios de la Tarea (${forms.length} formularios)
+        </h4>
+    `;
+
+    forms.forEach(f => {
+      html += `
+        <div style="margin-top: 16px; margin-bottom: 8px; font-weight: 700; font-size: 11px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">
+          📄 ${f.FORM_NAME} (${f.FORM_CODE})
+        </div>
+      `;
+
+      const entries = Object.entries(f.RESPUESTAS || {});
+      if (entries.length === 0) {
+        html += `<div style="color: var(--text-muted); font-size: 11px; padding: 4px 10px;">Sin respuestas registradas.</div>`;
+      } else {
+        entries.forEach(([q, val]) => {
+          const valUpper = val.toString().toUpperCase().trim();
+          let highlightClass = '';
+          if (valUpper === 'SI' || valUpper === 'SÍ') highlightClass = 'yes-highlight';
+          else if (valUpper === 'NO') highlightClass = 'no-highlight';
+
+          html += `
+            <div class="response-card-item ${highlightClass}" style="margin-left: 10px;">
+              <div class="response-question">${q}</div>
+              <div class="response-answer">${val}</div>
+            </div>
+          `;
+        });
+      }
+    });
+
+    html += `</div>`;
+    container.innerHTML = html;
+  }
+
+  // Cierra un modal específico por ID
+  closeModal(modalId) {
+    const el = document.getElementById(modalId);
+    if (el) el.remove();
   }
 }
 
