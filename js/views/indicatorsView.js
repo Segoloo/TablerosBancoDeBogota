@@ -1161,9 +1161,14 @@ class IndicatorsView {
       cols = [
         { label: 'TA', key: 'CODIGO_TAREA' },
         { label: 'Punto de Venta', key: 'NOMBRE PUNTO DE ATENCIÓN' },
+        { label: 'ID Sitio', key: 'ID SITIO' },
         { label: 'Departamento', key: 'DEPARTAMENTO' },
+        { label: 'Ciudad', key: 'CIUDAD' },
+        { label: 'Zona Lineacom', key: 'ZONA LINEACOM' },
+        { label: 'Técnico', key: 'TECNICO' },
         { label: 'Fecha Apertura', key: 'FECHA DE APERTURA (DD/MM/AAAA)' },
         { label: 'Fecha Límite', key: 'FECHA DE VENCIMIENTO (DD/MM/AAAA)' },
+        { label: 'Estado Visita', key: 'ESTADO DE LA VISITA' },
         { label: 'Estado', key: '_is_abierto' },
         { label: 'SLA', key: 'DENTRO DE LOS SLA' },
         { label: 'Retraso', key: '_retraso' }
@@ -1172,7 +1177,12 @@ class IndicatorsView {
       cols = [
         { label: 'TA', key: 'CODIGO_TAREA' },
         { label: 'Establecimiento', key: 'ESTABLECIMIENTO' },
+        { label: 'ID Sitio', key: 'ID SITIO' },
         { label: 'Departamento', key: 'DEPARTAMENTO' },
+        { label: 'Ciudad', key: 'CIUDAD' },
+        { label: 'Zona Lineacom', key: 'ZONA LINEACOM' },
+        { label: 'Técnico', key: 'TECNICO' },
+        { label: 'Tipología', key: 'TIPOLOGIA' },
         { label: 'Marquesina', key: '_kit_marquesina' },
         { label: 'Cartel', key: '_kit_cartel' },
         { label: 'St. Vidrio', key: '_kit_sticker_vidrio' },
@@ -1185,9 +1195,16 @@ class IndicatorsView {
       cols = [
         { label: 'TA', key: 'CODIGO_TAREA' },
         { label: 'Establecimiento', key: 'ESTABLECIMIENTO' },
+        { label: 'ID Sitio', key: 'ID SITIO' },
         { label: 'Departamento', key: 'DEPARTAMENTO' },
+        { label: 'Ciudad', key: 'CIUDAD' },
+        { label: 'Zona Lineacom', key: 'ZONA LINEACOM' },
+        { label: 'Técnico', key: 'TECNICO' },
+        { label: 'Tipología', key: 'TIPOLOGIA' },
+        { label: 'Forma Atención', key: 'FORMA DE ATENCION' },
         { label: 'Fecha Lista', key: 'FECHA LISTA' },
         { label: 'Fecha Límite', key: 'FECHA LIMITE' },
+        { label: 'Estado Visita', key: 'ESTADO DE LA VISITA' },
         { label: 'Estado', key: '_is_abierto' },
         { label: 'SLA', key: 'CUMPLE SLA' },
         { label: 'Retraso', key: '_retraso' }
@@ -1239,7 +1256,15 @@ class IndicatorsView {
           const code = r['CODIGO_TAREA'] || r['NRO PEDIDO / ORDEN DE COMPRA'] || '—';
           valHtml = `<strong style="font-family: var(--font-mono); font-size: 10.5px; color: var(--bdb-gold);">${code}</strong>`;
         } else {
-          valHtml = this.model.formatCellValue(c.key, r[c.key]);
+          let rawVal = r[c.key];
+          if (c.key === 'ZONA LINEACOM') {
+            rawVal = r['ZONA LINEACOM'] || r['COORDINADOR ENCARGADO'];
+          } else if (c.key === 'TECNICO') {
+            rawVal = r['TECNICO'] || r['INGENIERO DE CAMPO'] || r['TÉCNICO'];
+          } else if (c.key === 'ESTADO DE LA VISITA') {
+            rawVal = r['ESTADO DE LA VISITA'] || r['ESTADO'];
+          }
+          valHtml = this.model.formatCellValue(c.key, rawVal);
         }
         
         tableHtml += `<td>${valHtml}</td>`;
