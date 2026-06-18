@@ -463,11 +463,11 @@ class IndicatorsView {
     
     if (!status) return 'SIN REGISTRO';
     
-    if (status.includes('EXITOSO') || status.includes('EXITOSA') || status === 'EJECUTADO') {
-      return 'EXITOSA';
-    }
     if (status.includes('NO_EXITOSO') || status.includes('NO EXITOSA') || status.includes('ILOCALIZADO') || status.includes('FALLIDA')) {
       return 'NO EXITOSA';
+    }
+    if (status.includes('EXITOSO') || status.includes('EXITOSA') || status === 'EJECUTADO') {
+      return 'EXITOSA';
     }
     if (status.includes('CANCELADO') || status.includes('CANCELADA')) {
       return 'CANCELADA';
