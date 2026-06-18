@@ -972,6 +972,7 @@ class IndicatorsView {
         const tipologias = {};
         rows.forEach(r => {
           const tipo = (r['TIPOLOGIA'] || 'SIN TIPOLOGÍA').trim().toUpperCase();
+          if (tipo === 'SIN TIPOLOGÍA' || tipo === '') return;
           if (!tipologias[tipo]) tipologias[tipo] = { marq: 0, cart: 0, stV: 0, stM: 0, habl: 0 };
           if ((r['SE_INSTALA_MARQUESINA'] || '').trim().toUpperCase() === 'SI') tipologias[tipo].marq++;
           if ((r['SE_INSTALA_CARTEL'] || '').trim().toUpperCase() === 'SI') tipologias[tipo].cart++;

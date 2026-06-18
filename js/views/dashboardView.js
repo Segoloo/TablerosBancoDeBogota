@@ -204,7 +204,7 @@ class DashboardView {
           if (sidebarItem) {
             menuItems.forEach(i => i.classList.remove('active'));
             sidebarItem.classList.add('active');
-            
+
             // Actualizar título de Topbar
             const titleEl = document.getElementById('topbar-active-title');
             if (titleEl) {
@@ -321,7 +321,7 @@ class DashboardView {
           <div class="hub-card disabled">
             <div class="hub-card-icon">🔄</div>
             <h3 class="hub-card-title">Seguimiento transaccional</h3>
-            <p class="hub-card-desc">Monitoreo transaccional por Corresponsalía Bancaria, detectando volumen, cupos y comportamiento de operaciones.</p>
+            <p class="hub-card-desc">Monitoreo transaccional por Corresponsalía Bancaria, detectando volumen y comportamiento de operaciones.</p>
             <div class="hub-card-badge">Próximamente</div>
           </div>
         </div>
