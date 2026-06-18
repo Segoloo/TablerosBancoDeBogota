@@ -904,7 +904,7 @@ class IndicatorsView {
         this.charts.kitPublicidad = new Chart(canvasKit, {
           type: 'bar',
           data: {
-            labels: ['Marquesina Ext.', 'Cartel Saliente', 'Sticker Vidrio', 'Sticker Muro', 'Hablador'],
+            labels: ['Marquesina Exterior', 'Cartel Saliente', 'Sticker Vidrio', 'Sticker Muro', 'Hablador'],
             datasets: [{
               label: 'Cantidad Instalada',
               data: [marquesinaCount, cartelCount, stickerVidrioCount, stickerMuroCount, habladorCount],
@@ -921,7 +921,13 @@ class IndicatorsView {
               legend: { display: false }
             },
             scales: {
-              x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+              x: { 
+                ticks: { 
+                  color: '#94a3b8',
+                  font: { size: 10, weight: '500' }
+                }, 
+                grid: { display: false } 
+              },
               y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } }
             }
           }

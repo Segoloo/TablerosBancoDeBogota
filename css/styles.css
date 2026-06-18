@@ -1126,10 +1126,9 @@ body {
   margin-top: 2px;
 }
 
-/* Gráficos Layout */
 .charts-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(385px, 1fr));
   gap: 16px;
   margin-top: 16px;
 }
