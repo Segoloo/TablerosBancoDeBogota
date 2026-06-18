@@ -399,6 +399,9 @@ class IndicatorsView {
 
     content.innerHTML = `
       <div class="sub-tab-panel-container fade-in">
+        <!-- Panel de Monitoreo Detallado por Punto (fuera de la rejilla de KPIs) -->
+        <div id="pointKpiContainer"></div>
+
         <!-- KPIs Principales -->
         <div class="kpi-board" id="kpiBoard">
           <!-- Creados dinámicamente -->
@@ -542,7 +545,7 @@ class IndicatorsView {
       const puntoFilterVal = this.model.filters.punto.trim();
       
       puntoKpiHtml = `
-        <div class="point-advertising-kpi-card fade-in" style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(0, 26, 58, 0.8) 0%, rgba(20, 50, 125, 0.45) 100%); border: 1.5px solid var(--bdb-gold); border-radius: 16px; padding: 22px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); margin-bottom: 8px; position: relative; overflow: hidden;">
+        <div class="point-advertising-kpi-card fade-in" style="background: linear-gradient(135deg, rgba(0, 26, 58, 0.8) 0%, rgba(20, 50, 125, 0.45) 100%); border: 1.5px solid var(--bdb-gold); border-radius: 16px; padding: 22px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); margin-bottom: 16px; position: relative; overflow: hidden;">
           <div style="position: absolute; top: -20px; right: -20px; font-size: 120px; opacity: 0.03; pointer-events: none; transform: rotate(-15deg);">📍</div>
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid rgba(214, 162, 24, 0.25); padding-bottom: 14px; margin-bottom: 18px;">
             <div>
@@ -657,10 +660,14 @@ class IndicatorsView {
       `;
     }
 
+    // Renderizar el bloque de punto fuera de la rejilla de KPIs para que no la deforme
+    const pointKpiContainer = document.getElementById('pointKpiContainer');
+    if (pointKpiContainer) {
+      pointKpiContainer.innerHTML = puntoKpiHtml;
+    }
+
     // HTML de las tarjetas
     container.innerHTML = `
-      ${puntoKpiHtml}
-      
       <!-- Total Registros -->
       <div class="kpi-card-dashboard clickable-kpi" id="kpiTotalCard" title="Ver lista completa">
         <div class="kpi-icon-db">📋</div>
