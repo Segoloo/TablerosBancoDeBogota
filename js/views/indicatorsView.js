@@ -266,6 +266,10 @@ class IndicatorsView {
     if (this.activeSubTab === 'desinstalacion') {
       titleTab = 'Desinstalación de Publicidad';
       rawList = (data.desinstalacion?.bd || []).concat(data.desinstalacion?.abiertos || []);
+      rawList = rawList.filter(r => {
+        const t = (r['TIPO DE SERVICIO'] || '').toString().trim().toUpperCase();
+        return t === 'CIERRES BANCO DE BOGOTA';
+      });
       slaField = 'DENTRO DE LOS SLA';
     } else {
       if (this.activeSubTab === 'implementacion') {
@@ -276,6 +280,10 @@ class IndicatorsView {
         titleTab = 'Capacitación';
       }
       rawList = (data.implementacion?.bd || []).concat(data.implementacion?.abiertos || []);
+      rawList = rawList.filter(r => {
+        const t = (r['TIPO DE SERVICIO'] || '').toString().trim().toUpperCase();
+        return t === 'FORMATO CAPACITACION Y PUBLICIDAD BANCO DE BOGOTA';
+      });
     }
 
     // Filtrar la lista actualizando slicers del modelo
