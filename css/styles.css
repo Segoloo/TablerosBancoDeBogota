@@ -1081,9 +1081,28 @@ body {
 /* Tablero de KPIs */
 .kpi-board {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
   margin-top: 10px;
+}
+
+/* Responsive KPI board */
+@media (max-width: 1300px) {
+  .kpi-board {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .kpi-board {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .kpi-board {
+    grid-template-columns: 1fr;
+  }
 }
 
 .kpi-card-dashboard {
@@ -1153,17 +1172,15 @@ body {
   grid-column: 1 / -1;
 }
 
-/* Responsive: 2 columnas en pantallas medianas */
+/* Responsive: 2 columnas en pantallas medianas (solo gráficas) */
 @media (max-width: 1100px) {
-  .kpi-board,
   .charts-layout {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Responsive: 1 columna en pantallas pequeñas */
+/* Responsive: 1 columna en pantallas pequeñas (solo gráficas) */
 @media (max-width: 600px) {
-  .kpi-board,
   .charts-layout {
     grid-template-columns: 1fr;
   }
