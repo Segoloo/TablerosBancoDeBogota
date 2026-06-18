@@ -1075,7 +1075,7 @@ body {
 /* Tablero de KPIs */
 .kpi-board {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-top: 10px;
 }
@@ -1130,7 +1130,7 @@ body {
 
 .charts-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(385px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-top: 16px;
 }
@@ -1145,6 +1145,22 @@ body {
 
 .chart-card.wide-chart {
   grid-column: 1 / -1;
+}
+
+/* Responsive: 2 columnas en pantallas medianas */
+@media (max-width: 1100px) {
+  .kpi-board,
+  .charts-layout {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Responsive: 1 columna en pantallas pequeñas */
+@media (max-width: 600px) {
+  .kpi-board,
+  .charts-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 .chart-title {

@@ -1103,6 +1103,7 @@ class IndicatorsView {
       let habladorCount = 0;
 
       const causalesNoInstala = {};
+      const causalesNoInstalaRows = {}; // Mapeo causal → Set de rows (para drill-down interactivo)
       const tipologiaCounts = {};
       const estadoVisitaCounts = {};
       const zonaCounts = {};
@@ -1121,6 +1122,8 @@ class IndicatorsView {
             const causalVal = (r[causalCol] || '').trim();
             if (causalVal && causalVal !== 'N/A' && causalVal !== '—' && causalVal !== 'null') {
               causalesNoInstala[causalVal] = (causalesNoInstala[causalVal] || 0) + 1;
+              if (!causalesNoInstalaRows[causalVal]) causalesNoInstalaRows[causalVal] = new Set();
+              causalesNoInstalaRows[causalVal].add(r);
             }
           }
         };
@@ -1179,10 +1182,10 @@ class IndicatorsView {
         });
       }
 
-      // 2. Gráfico Causal No Instalación
+      // 2. Gráfico Causal No Instalación (INTERACTIVO - click para ver TAs)
       const canvasNoInst = document.getElementById('chartCausalNoInstalacion');
       if (canvasNoInst) {
-        const sortedNoInst = Object.entries(causalesNoInstala).sort((a, b) => b[1] - a[1]).slice(0, 6);
+        const sortedNoInst = Object.entries(causalesNoInstala).sort((a, b) => b[1] - a[1]).slice(0, 10);
         this.charts.causalNoInst = new Chart(canvasNoInst, {
           type: 'bar',
           data: {
@@ -1191,6 +1194,7 @@ class IndicatorsView {
               label: 'Reportes',
               data: sortedNoInst.map(x => x[1]),
               backgroundColor: 'rgba(205, 95, 140, 0.85)',
+              hoverBackgroundColor: 'rgba(205, 95, 140, 1)',
               borderColor: this.colors.pink,
               borderWidth: 1,
               borderRadius: 4
@@ -1200,6 +1204,19 @@ class IndicatorsView {
             responsive: true,
             maintainAspectRatio: false,
             indexAxis: 'y',
+            onClick: (evt, elements) => {
+              if (elements.length > 0) {
+                const idx = elements[0].index;
+                const causalLabel = sortedNoInst[idx][0];
+                const causalRows = causalesNoInstalaRows[causalLabel]
+                  ? Array.from(causalesNoInstalaRows[causalLabel])
+                  : [];
+                this.openKpiModal(`Causal: ${causalLabel}`, causalRows);
+              }
+            },
+            onHover: (evt, elements) => {
+              canvasNoInst.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+            },
             plugins: {
               legend: { display: false },
               tooltip: {
@@ -1207,7 +1224,10 @@ class IndicatorsView {
                 titleColor: this.colors.gold,
                 bodyColor: '#FAFAFA',
                 padding: 10,
-                cornerRadius: 8
+                cornerRadius: 8,
+                callbacks: {
+                  afterBody: () => '\n🖱️ Click para ver detalle de TAs'
+                }
               }
             },
             scales: {
@@ -1262,10 +1282,10 @@ class IndicatorsView {
         });
       }
 
-      // 4. Gráfico Estado Visita
+      // 4. Gráfico Estado Visita (filtrando "SIN REGISTRO")
       const canvasEst = document.getElementById('chartEstadoVisita');
       if (canvasEst) {
-        const entries = Object.entries(estadoVisitaCounts);
+        const entries = Object.entries(estadoVisitaCounts).filter(e => e[0] !== 'SIN REGISTRO');
         this.charts.estadoVis = new Chart(canvasEst, {
           type: 'doughnut',
           data: {
@@ -1790,7 +1810,10 @@ class IndicatorsView {
       <div class="custom-modal-container">
         <div class="custom-modal-header">
           <h3>${title} (${recordsList.length})</h3>
-          <button class="btn-close-modal" id="btnCloseKpiModal">✕</button>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button class="btn-export-excel" id="btnExportKpiModal" title="Exportar a Excel" style="font-size: 11px; padding: 6px 12px;">⬇ Exportar</button>
+            <button class="btn-close-modal" id="btnCloseKpiModal">✕</button>
+          </div>
         </div>
         <div class="custom-modal-body">
           <div class="modal-table-wrapper">
@@ -1859,6 +1882,16 @@ class IndicatorsView {
       this.closeModal('customKpiModal');
     });
 
+    // Exportar los registros del modal a Excel
+    overlay.querySelector('#btnExportKpiModal')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.exportExcelCallback && recordsList.length > 0) {
+        const safeName = title.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ\s]/g, '').replace(/\s+/g, '_').substring(0, 50);
+        this.exportExcelCallback(recordsList, safeName || 'Detalle_Modal');
+      } else if (recordsList.length === 0) {
+        alert('No hay registros para exportar.');
+      }
+    });
 
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) this.closeModal('customKpiModal');
