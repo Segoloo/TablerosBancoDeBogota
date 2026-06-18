@@ -1392,8 +1392,8 @@ class IndicatorsView {
           garantias++;
         }
 
-        // Tipología
-        const tipo = (r['TIPOLOGIA'] || 'SIN TIPOLOGÍA').trim().toUpperCase();
+        // Tipología (normalizada igual que en publicidad: PRINCIPAL / INTERMEDIA / LEJANA)
+        const tipo = this.normalizeTipologia(r['TIPOLOGIA']);
         tipologiaCounts[tipo] = (tipologiaCounts[tipo] || 0) + 1;
 
         // Estado y Causal
@@ -1442,17 +1442,21 @@ class IndicatorsView {
         });
       }
 
-      // 2. Gráfico Tipología Capacitación
+      // 2. Gráfico Tipología Capacitación (mismo orden fijo y colores que publicidad)
       const canvasTipoCap = document.getElementById('chartTipologiaCapacitacion');
       if (canvasTipoCap) {
-        const entries = Object.entries(tipologiaCounts).filter(e => e[0] !== '');
+        const tipoOrder = ['PRINCIPAL', 'INTERMEDIA', 'LEJANA'];
+        const tipoColors = [this.colors.blue, this.colors.gold, this.colors.green];
+        const entries = tipoOrder
+          .filter(t => tipologiaCounts[t])
+          .map(t => [t, tipologiaCounts[t]]);
         this.charts.tipologiaCap = new Chart(canvasTipoCap, {
           type: 'doughnut',
           data: {
             labels: entries.map(e => e[0]),
             datasets: [{
               data: entries.map(e => e[1]),
-              backgroundColor: [this.colors.blue, this.colors.gold, this.colors.green, this.colors.pink, this.colors.yellow, this.colors.grey],
+              backgroundColor: entries.map((_, i) => tipoColors[tipoOrder.indexOf(entries[i][0])]),
               borderColor: 'rgba(0, 26, 58, 0.8)',
               borderWidth: 2
             }]
@@ -1472,8 +1476,9 @@ class IndicatorsView {
       const canvasEstCap = document.getElementById('chartEstadoCapacitacion');
       if (canvasEstCap) {
         // Unir estados y causas de fallo importantes para visualización operativa
+        // Se excluye 'SIN REGISTRO' igual que en el gráfico de Estado de Visita de publicidad
         const chartData = {};
-        Object.entries(estadoCapacitacion).forEach(([k, v]) => {
+        Object.entries(estadoCapacitacion).filter(([k]) => k !== 'SIN REGISTRO').forEach(([k, v]) => {
           chartData[`Estado: ${k}`] = v;
         });
         Object.entries(causalCapacitacion).sort((a, b) => b[1] - a[1]).slice(0, 5).forEach(([k, v]) => {
