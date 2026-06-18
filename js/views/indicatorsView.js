@@ -441,6 +441,44 @@ class IndicatorsView {
     this.charts = {};
   }
 
+  // Resuelve dinámicamente el estado de una visita buscando en las respuestas de formularios si está vacío en el registro
+  getRecordVisitStatus(r) {
+    let status = r['ESTADO DE LA VISITA'] || r['ESTADO'] || '';
+    status = status.toString().trim().toUpperCase();
+    
+    if (!status && Array.isArray(r.FORMS)) {
+      for (const f of r.FORMS) {
+        const resps = f.RESPUESTAS || {};
+        for (const [q, a] of Object.entries(resps)) {
+          const qUp = q.toUpperCase().trim();
+          const aStr = String(a).toUpperCase().trim();
+          if (qUp === 'ESTADO' || qUp === 'ESTADO DE LA VISITA' || qUp === 'ESTADO RESULTADO ACTIVIDAD') {
+            status = aStr;
+            break;
+          }
+        }
+        if (status) break;
+      }
+    }
+    
+    if (!status) return 'SIN REGISTRO';
+    
+    if (status.includes('EXITOSO') || status.includes('EXITOSA') || status === 'EJECUTADO') {
+      return 'EXITOSA';
+    }
+    if (status.includes('NO_EXITOSO') || status.includes('NO EXITOSA') || status.includes('ILOCALIZADO') || status.includes('FALLIDA')) {
+      return 'NO EXITOSA';
+    }
+    if (status.includes('CANCELADO') || status.includes('CANCELADA')) {
+      return 'CANCELADA';
+    }
+    if (status.includes('TELEFONICA') || status.includes('TELEFÓNICA')) {
+      return 'GESTIÓN TELEFÓNICA';
+    }
+    
+    return status;
+  }
+
   // Genera y renderiza las tarjetas de indicadores clave (KPIs)
   renderKPIs(rows, slaField, respField) {
     const container = document.getElementById('kpiBoard');
@@ -848,7 +886,7 @@ class IndicatorsView {
         tipologiaCounts[tipo] = (tipologiaCounts[tipo] || 0) + 1;
 
         // Estado de Visita
-        const estado = (r['ESTADO DE LA VISITA'] || r['ESTADO'] || 'SIN REGISTRO').trim().toUpperCase();
+        const estado = this.getRecordVisitStatus(r);
         estadoVisitaCounts[estado] = (estadoVisitaCounts[estado] || 0) + 1;
       });
 
@@ -1030,7 +1068,7 @@ class IndicatorsView {
         tipologiaCounts[tipo] = (tipologiaCounts[tipo] || 0) + 1;
 
         // Estado y Causal
-        const est = (r['ESTADO DE LA VISITA'] || r['ESTADO'] || 'SIN REGISTRO').trim().toUpperCase();
+        const est = this.getRecordVisitStatus(r);
         estadoCapacitacion[est] = (estadoCapacitacion[est] || 0) + 1;
 
         const causalVal = (r['CAUSAL DE ESTADO'] || '').trim();
@@ -1263,7 +1301,7 @@ class IndicatorsView {
           } else if (c.key === 'TECNICO') {
             rawVal = r['TECNICO'] || r['INGENIERO DE CAMPO'] || r['TÉCNICO'];
           } else if (c.key === 'ESTADO DE LA VISITA') {
-            rawVal = r['ESTADO DE LA VISITA'] || r['ESTADO'];
+            rawVal = this.getRecordVisitStatus(r);
           }
           valHtml = this.model.formatCellValue(c.key, rawVal);
         }
@@ -1566,7 +1604,7 @@ class IndicatorsView {
               </div>
               <div class="metadata-item">
                 <label>Estado Visita / Tarea</label>
-                <span>${record['ESTADO DE LA VISITA'] || (record._is_abierto ? 'Abierto' : 'Cerrado')}</span>
+                <span>${this.getRecordVisitStatus(record)}</span>
               </div>
               <div class="metadata-item">
                 <label>Causal Estado / Falla</label>
