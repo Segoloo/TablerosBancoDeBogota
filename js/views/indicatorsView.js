@@ -349,6 +349,14 @@ class IndicatorsView {
               <canvas id="chartEstadoVisita"></canvas>
             </div>
           </div>
+
+          <!-- Elementos Instalados por Tipología (Barras Apiladas) -->
+          <div class="chart-card wide-chart">
+            <div class="chart-title">Elementos Instalados por Tipología</div>
+            <div class="chart-container-wrapper" style="height: 280px;">
+              <canvas id="chartElementosPorTipologia"></canvas>
+            </div>
+          </div>
         </div>
       `;
     } else if (this.activeSubTab === 'capacitacion') {
@@ -460,6 +468,28 @@ class IndicatorsView {
     const cumpleAjustado = total - fallasLinea;
     const pctAjustado = total ? ((cumpleAjustado / total) * 100).toFixed(1) + '%' : '100.0%';
 
+    // KPI extra para Capacitación: % Garantías
+    let garantiasKpiHtml = '';
+    if (this.activeSubTab === 'capacitacion') {
+      let facturables = 0;
+      let garantias = 0;
+      rows.forEach(r => {
+        const forma = (r['FORMA DE ATENCION'] || '').trim().toUpperCase();
+        if (forma === 'VISITA TECNICA' || forma === 'SOPORTE TELEFONICO') facturables++;
+        else if (forma === 'GARANTIA') garantias++;
+      });
+      const totalAtencion = facturables + garantias;
+      const pctGarantias = totalAtencion ? ((garantias / totalAtencion) * 100).toFixed(1) + '%' : '0.0%';
+      garantiasKpiHtml = `
+        <div class="kpi-card-dashboard clickable-kpi" id="kpiGarantiasCard" title="Porcentaje de garantías sobre total de atenciones" style="border-left: 3px solid var(--bdb-yellow-pref);">
+          <div class="kpi-icon-db">🔄</div>
+          <div class="kpi-val-db" style="color: var(--bdb-yellow-pref);">${pctGarantias}</div>
+          <div class="kpi-lbl-db">% Garantías Capacitación</div>
+          <div class="kpi-sub-db">${garantias.toLocaleString('es-CO')} garantías de ${totalAtencion.toLocaleString('es-CO')} atenciones</div>
+        </div>
+      `;
+    }
+
     // HTML de las tarjetas
     container.innerHTML = `
       <!-- Total Registros -->
@@ -493,6 +523,8 @@ class IndicatorsView {
         <div class="kpi-lbl-db">Fallas Registradas</div>
         <div class="kpi-sub-db" style="font-size: 10px;">Línea: ${fallasLinea.toLocaleString('es-CO')} · Entidad: ${fallasEntidad.toLocaleString('es-CO')}</div>
       </div>
+
+      ${garantiasKpiHtml}
     `;
 
     // Bindear clicks interactivos a las tarjetas KPI
@@ -516,6 +548,11 @@ class IndicatorsView {
     document.getElementById('kpiFallasCard')?.addEventListener('click', () => {
       const records = rows.filter(r => (r[slaField] || '').toString().toUpperCase() === 'NO');
       this.openKpiModal('Fallas y Retrasos Registrados', records);
+    });
+
+    document.getElementById('kpiGarantiasCard')?.addEventListener('click', () => {
+      const records = rows.filter(r => (r['FORMA DE ATENCION'] || '').trim().toUpperCase() === 'GARANTIA');
+      this.openKpiModal('Garantías de Capacitación', records);
     });
   }
 
@@ -806,6 +843,46 @@ class IndicatorsView {
         });
       }
 
+      // 5. Gráfico Elementos Instalados por Tipología (Barras Apiladas)
+      const canvasElTipo = document.getElementById('chartElementosPorTipologia');
+      if (canvasElTipo) {
+        const tipologias = {};
+        rows.forEach(r => {
+          const tipo = (r['TIPOLOGIA'] || 'SIN TIPOLOGÍA').trim().toUpperCase();
+          if (!tipologias[tipo]) tipologias[tipo] = { marq: 0, cart: 0, stV: 0, stM: 0, habl: 0 };
+          if ((r['SE_INSTALA_MARQUESINA'] || '').trim().toUpperCase() === 'SI') tipologias[tipo].marq++;
+          if ((r['SE_INSTALA_CARTEL'] || '').trim().toUpperCase() === 'SI') tipologias[tipo].cart++;
+          if ((r['SE_INSTALA_STICKER_VIDRIO'] || '').trim().toUpperCase() === 'SI') tipologias[tipo].stV++;
+          if ((r['SE_INSTALA_STICKER_MURO'] || '').trim().toUpperCase() === 'SI') tipologias[tipo].stM++;
+          if ((r['SE_INSTALA_HABLADOR'] || '').trim().toUpperCase() === 'SI') tipologias[tipo].habl++;
+        });
+        const tipoLabels = Object.keys(tipologias).sort();
+        this.charts.elTipo = new Chart(canvasElTipo, {
+          type: 'bar',
+          data: {
+            labels: tipoLabels,
+            datasets: [
+              { label: 'Marquesina', data: tipoLabels.map(t => tipologias[t].marq), backgroundColor: 'rgba(214, 162, 24, 0.85)', borderRadius: 3 },
+              { label: 'Cartel', data: tipoLabels.map(t => tipologias[t].cart), backgroundColor: 'rgba(20, 50, 125, 0.85)', borderRadius: 3 },
+              { label: 'Sticker Vidrio', data: tipoLabels.map(t => tipologias[t].stV), backgroundColor: 'rgba(0, 135, 110, 0.85)', borderRadius: 3 },
+              { label: 'Sticker Muro', data: tipoLabels.map(t => tipologias[t].stM), backgroundColor: 'rgba(205, 95, 140, 0.85)', borderRadius: 3 },
+              { label: 'Hablador', data: tipoLabels.map(t => tipologias[t].habl), backgroundColor: 'rgba(235, 205, 90, 0.85)', borderRadius: 3 }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top', labels: { color: '#CBD5E1', font: { size: 10 }, boxWidth: 14 } }
+            },
+            scales: {
+              x: { stacked: true, ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { display: false } },
+              y: { stacked: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } }
+            }
+          }
+        });
+      }
+
     } else if (this.activeSubTab === 'capacitacion') {
       // ════ TAB DE CAPACITACIÓN: FACTURABLES VS GARANTÍAS, TIPOLOGÍA, ESTADOS ════
       
@@ -959,7 +1036,7 @@ class IndicatorsView {
     let cols = [];
     if (this.activeSubTab === 'desinstalacion') {
       cols = [
-        { label: 'OC / Pedido', key: 'NRO PEDIDO / ORDEN DE COMPRA' },
+        { label: 'TA', key: 'CODIGO_TAREA' },
         { label: 'Punto de Venta', key: 'NOMBRE PUNTO DE ATENCIÓN' },
         { label: 'Departamento', key: 'DEPARTAMENTO' },
         { label: 'Fecha Apertura', key: 'FECHA DE APERTURA (DD/MM/AAAA)' },
@@ -968,9 +1045,22 @@ class IndicatorsView {
         { label: 'SLA', key: 'DENTRO DE LOS SLA' },
         { label: 'Retraso', key: '_retraso' }
       ];
+    } else if (this.activeSubTab === 'publicidad') {
+      cols = [
+        { label: 'TA', key: 'CODIGO_TAREA' },
+        { label: 'Establecimiento', key: 'ESTABLECIMIENTO' },
+        { label: 'Departamento', key: 'DEPARTAMENTO' },
+        { label: 'Marquesina', key: '_kit_marquesina' },
+        { label: 'Cartel', key: '_kit_cartel' },
+        { label: 'St. Vidrio', key: '_kit_sticker_vidrio' },
+        { label: 'St. Muro', key: '_kit_sticker_muro' },
+        { label: 'Hablador', key: '_kit_hablador' },
+        { label: 'Estado', key: '_is_abierto' },
+        { label: 'SLA', key: 'CUMPLE SLA' }
+      ];
     } else {
       cols = [
-        { label: 'ID Sitio', key: 'ID SITIO' },
+        { label: 'TA', key: 'CODIGO_TAREA' },
         { label: 'Establecimiento', key: 'ESTABLECIMIENTO' },
         { label: 'Departamento', key: 'DEPARTAMENTO' },
         { label: 'Fecha Lista', key: 'FECHA LISTA' },
@@ -1020,6 +1110,11 @@ class IndicatorsView {
         } else if (c.key === '_retraso') {
           const delay = this.model.getDiasPostVencimiento(r, this.activeSubTab);
           valHtml = this.renderDelayPill(delay);
+        } else if (c.key.startsWith('_kit_')) {
+          valHtml = this.renderKitBadge(r, c.key);
+        } else if (c.key === 'CODIGO_TAREA') {
+          const code = r['CODIGO_TAREA'] || r['NRO PEDIDO / ORDEN DE COMPRA'] || '—';
+          valHtml = `<strong style="font-family: var(--font-mono); font-size: 10.5px; color: var(--bdb-gold);">${code}</strong>`;
         } else {
           valHtml = this.model.formatCellValue(c.key, r[c.key]);
         }
@@ -1054,6 +1149,27 @@ class IndicatorsView {
     }
     const urgencyClass = dias <= 7 ? 'pill-warning' : 'pill-danger';
     return `<span class="pill ${urgencyClass}">⚠ ${text}</span>`;
+  }
+
+  // Helper para renderizar badge del kit publicitario en la tabla
+  renderKitBadge(record, colKey) {
+    const MAP = {
+      '_kit_marquesina': { install: 'SE_INSTALA_MARQUESINA', causal: 'CAUSAL_NO_INSTALA_MARQUESINA' },
+      '_kit_cartel': { install: 'SE_INSTALA_CARTEL', causal: 'CAUSAL_NO_INSTALA_CARTEL' },
+      '_kit_sticker_vidrio': { install: 'SE_INSTALA_STICKER_VIDRIO', causal: 'CAUSAL_NO_INSTALA_STICKER_VIDRIO' },
+      '_kit_sticker_muro': { install: 'SE_INSTALA_STICKER_MURO', causal: 'CAUSAL_NO_INSTALA_STICKER_MURO' },
+      '_kit_hablador': { install: 'SE_INSTALA_HABLADOR', causal: 'CAUSAL_NO_INSTALA_HABLADOR' }
+    };
+    const mapping = MAP[colKey];
+    if (!mapping) return '—';
+    const val = (record[mapping.install] || '').trim().toUpperCase();
+    if (val === 'SI') return `<span class="pub-kit-badge installed">✓ Sí</span>`;
+    if (val === 'NO') {
+      const causal = (record[mapping.causal] || '').trim();
+      const motivo = causal && causal !== 'N/A' && causal !== 'null' ? causal : 'Sin motivo';
+      return `<span class="pub-kit-badge not-installed" title="${motivo}">✗ No</span>`;
+    }
+    return `<span class="pub-kit-badge not-applicable">—</span>`;
   }
 
   // Genera el HTML del paginador
@@ -1259,9 +1375,9 @@ class IndicatorsView {
           <!-- Tab Resumen -->
           <div class="wizard-tab-panel" id="panelResumen">
             <div class="wizard-metadata-grid">
-              <div class="metadata-item">
+              <div class="metadata-item" style="border-left: 3px solid var(--bdb-gold);">
                 <label>Código de Tarea (TA)</label>
-                <span>${taCode}</span>
+                <span style="font-family: var(--font-mono); font-size: 15px; font-weight: 800; color: var(--bdb-gold);">${taCode}</span>
               </div>
               <div class="metadata-item">
                 <label>ID Sitio / Punto</label>
@@ -1280,8 +1396,12 @@ class IndicatorsView {
                 <span>${record['TECNICO'] || '—'}</span>
               </div>
               <div class="metadata-item">
+                <label>Zona Lineacom</label>
+                <span>${record['ZONA LINEACOM'] || record['COORDINADOR ENCARGADO'] || '—'}</span>
+              </div>
+              <div class="metadata-item">
                 <label>Fecha Solicitud (Lista)</label>
-                <span>${record['FECHA LISTA'] || '—'}</span>
+                <span>${record['FECHA LISTA'] || record['FECHA DE APERTURA (DD/MM/AAAA)'] || '—'}</span>
               </div>
               <div class="metadata-item">
                 <label>Fecha Límite (Plan fin)</label>
@@ -1316,6 +1436,9 @@ class IndicatorsView {
                 <span>${record['OBSERVACIÓN ESTANDAR'] || '—'}</span>
               </div>
             </div>
+
+            <!-- Kit de Publicidad (detalle visual) -->
+            ${this.renderWizardKitSection(record)}
           </div>
 
           <!-- Tab Formularios -->
@@ -1403,6 +1526,61 @@ class IndicatorsView {
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) this.closeModal('customWizardModal');
     });
+  }
+
+  // Renderiza la sección del Kit de Publicidad dentro del Wizard
+  renderWizardKitSection(record) {
+    // Solo mostrar si hay datos de publicidad
+    const elements = [
+      { name: 'Marquesina Exterior', install: 'SE_INSTALA_MARQUESINA', causal: 'CAUSAL_NO_INSTALA_MARQUESINA', icon: '🏪' },
+      { name: 'Cartel Saliente', install: 'SE_INSTALA_CARTEL', causal: 'CAUSAL_NO_INSTALA_CARTEL', icon: '🪧' },
+      { name: 'Sticker Vidrio', install: 'SE_INSTALA_STICKER_VIDRIO', causal: 'CAUSAL_NO_INSTALA_STICKER_VIDRIO', icon: '🔵' },
+      { name: 'Sticker Muro', install: 'SE_INSTALA_STICKER_MURO', causal: 'CAUSAL_NO_INSTALA_STICKER_MURO', icon: '🟡' },
+      { name: 'Hablador', install: 'SE_INSTALA_HABLADOR', causal: 'CAUSAL_NO_INSTALA_HABLADOR', icon: '📋' }
+    ];
+
+    const hasAnyKitData = elements.some(el => {
+      const v = (record[el.install] || '').trim().toUpperCase();
+      return v === 'SI' || v === 'NO';
+    });
+    if (!hasAnyKitData) return '';
+
+    let html = `
+      <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06);">
+        <h4 style="font-size: 13px; font-weight: 700; color: var(--bdb-gold); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px;">📢 Kit de Publicidad</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+    `;
+
+    elements.forEach(el => {
+      const val = (record[el.install] || '').trim().toUpperCase();
+      const causal = (record[el.causal] || '').trim();
+      let statusHtml = '';
+      let borderColor = 'rgba(255,255,255,0.05)';
+      let bgColor = 'rgba(255,255,255,0.02)';
+
+      if (val === 'SI') {
+        statusHtml = `<span style="color: #10b981; font-weight: 700;">✓ Instalado</span>`;
+        borderColor = 'rgba(16, 185, 129, 0.3)';
+        bgColor = 'rgba(16, 185, 129, 0.04)';
+      } else if (val === 'NO') {
+        const motivo = causal && causal !== 'N/A' && causal !== 'null' ? causal : 'Sin motivo registrado';
+        statusHtml = `<span style="color: #ff8b8b; font-weight: 700;">✗ No Instalado</span><div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Motivo: ${motivo}</div>`;
+        borderColor = 'rgba(239, 68, 68, 0.3)';
+        bgColor = 'rgba(239, 68, 68, 0.04)';
+      } else {
+        statusHtml = `<span style="color: var(--text-muted); font-weight: 500;">— Sin registro</span>`;
+      }
+
+      html += `
+        <div style="background: ${bgColor}; border: 1px solid ${borderColor}; border-radius: 10px; padding: 12px 14px;">
+          <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 6px;">${el.icon} ${el.name}</div>
+          ${statusHtml}
+        </div>
+      `;
+    });
+
+    html += `</div></div>`;
+    return html;
   }
 
   // Renderiza respuestas de un formulario específico
