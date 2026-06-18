@@ -729,7 +729,8 @@ class IndicatorsView {
     if (!container) return;
 
     const total = rows.length;
-    const abiertos = rows.filter(r => r._is_abierto).length;
+    const abiertoRows = rows.filter(r => r._is_abierto);
+    const abiertos = abiertoRows.length;
     const cerrados = total - abiertos;
 
     // Calcular SLA General
@@ -933,6 +934,15 @@ class IndicatorsView {
         <div class="kpi-sub-db" style="font-size: 10px;">Línea: ${fallasLinea.toLocaleString('es-CO')} · Entidad: ${fallasEntidad.toLocaleString('es-CO')}</div>
       </div>
 
+      <!-- Actividades Abiertas -->
+      <div class="kpi-card-dashboard clickable-kpi" id="kpiAbiertosCard" title="Ver actividades pendientes / abiertas" style="border-left: 3px solid var(--bdb-red-sym); position: relative; overflow: hidden;">
+        <span style="position: absolute; top: 10px; right: 12px; width: 8px; height: 8px; background: var(--bdb-red-sym); border-radius: 50%; box-shadow: 0 0 0 0 rgba(205,50,50,0.6); animation: kpi-pulse 1.8s ease-in-out infinite;"></span>
+        <div class="kpi-icon-db">🔓</div>
+        <div class="kpi-val-db" style="color: var(--bdb-red-sym);">${abiertos.toLocaleString('es-CO')}</div>
+        <div class="kpi-lbl-db">Actividades Abiertas</div>
+        <div class="kpi-sub-db">${cerrados.toLocaleString('es-CO')} cerradas · ${total.toLocaleString('es-CO')} total</div>
+      </div>
+
       ${garantiasKpiHtml}
     `;
 
@@ -962,6 +972,13 @@ class IndicatorsView {
     document.getElementById('kpiGarantiasCard')?.addEventListener('click', () => {
       const records = rows.filter(r => (r['FORMA DE ATENCION'] || '').trim().toUpperCase() === 'GARANTIA');
       this.openKpiModal('Garantías de Capacitación', records);
+    });
+
+    document.getElementById('kpiAbiertosCard')?.addEventListener('click', () => {
+      const tabLabel = this.activeSubTab === 'capacitacion' ? 'Capacitación'
+        : this.activeSubTab === 'publicidad' ? 'Publicidad'
+        : 'Desinstalación de Publicidad';
+      this.openKpiModal(`Actividades Abiertas — ${tabLabel}`, abiertoRows);
     });
   }
 
