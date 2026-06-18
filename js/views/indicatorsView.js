@@ -5,7 +5,7 @@ class IndicatorsView {
     this.containerId = containerId;
     this.model = model;
     
-    this.activeSubTab = 'implementacion'; // Tab por defecto: Cap. y Publicidad
+    this.activeSubTab = 'publicidad'; // Tab por defecto: Publicidad
     this.charts = {}; // Almacén de instancias de Chart.js
     this.currentPageRows = []; // Almacén de registros de la página activa
     
@@ -50,8 +50,7 @@ class IndicatorsView {
           
           <!-- SUB-PESTAÑAS (Navegación interna) -->
           <div class="sub-tab-bar" id="subTabBar">
-            <button class="sub-tab-btn active" data-subtab="implementacion">🔧 Cap. y Publicidad</button>
-            <button class="sub-tab-btn" data-subtab="publicidad">📢 Publicidad</button>
+            <button class="sub-tab-btn active" data-subtab="publicidad">📢 Publicidad</button>
             <button class="sub-tab-btn" data-subtab="capacitacion">🎓 Capacitación</button>
             <button class="sub-tab-btn" data-subtab="desinstalacion">🔄 Desinstalación Pub.</button>
           </div>

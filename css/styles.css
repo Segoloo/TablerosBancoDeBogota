@@ -1994,3 +1994,194 @@ body {
   cursor: pointer;
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   UPGRADE ESTÉTICO PREMIUM BANCO DE BOGOTÁ (ADICIONES)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Fondo corporativo dinámico */
+body {
+  background: radial-gradient(circle at 50% 50%, #001e46 0%, #000a18 100%) !important;
+}
+
+/* Animación de entrada premium con desplazamiento suave */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sub-tab-panel-container, .indicators-dashboard-wrapper, .home-hub-wrapper, .custom-modal-container {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+/* Tarjetas con Efecto Glassmorphism Refinado */
+.filters-panel, .chart-card, .table-section-card, .kpi-card-dashboard {
+  background: rgba(0, 26, 58, 0.45) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(214, 162, 24, 0.16) !important;
+  box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.4) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.filters-panel:hover, .chart-card:hover, .table-section-card:hover, .kpi-card-dashboard:hover {
+  border-color: rgba(214, 162, 24, 0.4) !important;
+  box-shadow: 0 14px 45px 0 rgba(214, 162, 24, 0.12), inset 0 0 15px rgba(255,255,255,0.01) !important;
+  transform: translateY(-2px);
+}
+
+/* Brillo y animación de respiración para KPIs Premium */
+.premium-kpi {
+  background: linear-gradient(135deg, rgba(20, 50, 125, 0.45) 0%, rgba(214, 162, 24, 0.15) 100%) !important;
+  border: 1px solid rgba(214, 162, 24, 0.45) !important;
+  box-shadow: 0 8px 30px rgba(214, 162, 24, 0.15) !important;
+  animation: borderGlow 6s infinite alternate ease-in-out;
+}
+
+@keyframes borderGlow {
+  0% { border-color: rgba(214, 162, 24, 0.45); box-shadow: 0 8px 30px rgba(214, 162, 24, 0.15); }
+  50% { border-color: rgba(214, 162, 24, 0.7); box-shadow: 0 10px 35px rgba(214, 162, 24, 0.25); }
+  100% { border-color: rgba(214, 162, 24, 0.45); box-shadow: 0 8px 30px rgba(214, 162, 24, 0.15); }
+}
+
+/* Transiciones interactivas para inputs y desplegables */
+.table-search-box, .filter-group select {
+  transition: all var(--transition-fast) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.table-search-box:focus, .filter-group select:focus {
+  border-color: var(--bdb-gold) !important;
+  box-shadow: 0 0 10px rgba(214, 162, 24, 0.35) !important;
+  background: #000c1c !important;
+}
+
+/* Botones de acción dinámicos */
+.btn-apply-filters, .btn-apply-filters-small {
+  background: linear-gradient(135deg, var(--bdb-blue) 0%, #1c459c 100%) !important;
+  border: 1px solid rgba(214, 162, 24, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(20, 50, 125, 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.btn-apply-filters:hover, .btn-apply-filters-small:hover {
+  border-color: var(--bdb-gold) !important;
+  box-shadow: 0 6px 20px rgba(214, 162, 24, 0.4) !important;
+  transform: translateY(-1.5px);
+}
+
+.btn-reset-filters {
+  transition: all var(--transition-fast) !important;
+}
+
+.btn-reset-filters:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #fff !important;
+}
+
+/* Filas de la tabla con efectos hover refinados */
+.indicators-table tr {
+  transition: background-color 0.2s ease, transform 0.15s ease !important;
+}
+
+.indicators-table tr.clickable-row:hover {
+  background-color: rgba(214, 162, 24, 0.06) !important;
+}
+
+.indicators-table tr.clickable-row:active {
+  transform: scale(0.995);
+}
+
+/* Diseño interactivo en Sub-pestañas internas */
+.sub-tab-btn {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.sub-tab-btn:hover {
+  background: rgba(214, 162, 24, 0.05) !important;
+  border-color: rgba(214, 162, 24, 0.3) !important;
+  color: #fff !important;
+}
+
+.sub-tab-btn.active {
+  background: linear-gradient(135deg, rgba(20, 50, 125, 0.55) 0%, rgba(214, 162, 24, 0.25) 100%) !important;
+  border-color: var(--bdb-gold) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 15px rgba(214, 162, 24, 0.28) !important;
+}
+
+/* Pastillas informativas premium para el Kit publicitario */
+.pub-kit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+}
+
+.pub-kit-badge.installed {
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.pub-kit-badge.not-installed {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ff8b8b;
+  border-color: rgba(239, 68, 68, 0.25);
+  cursor: help;
+  position: relative;
+}
+
+.pub-kit-badge.not-applicable {
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-muted);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+/* Efectos en la barra lateral */
+.sidebar-item {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.sidebar-item:hover:not(.disabled) {
+  background: rgba(214, 162, 24, 0.04) !important;
+  color: #fff !important;
+  padding-left: 18px !important;
+}
+
+.sidebar-item.active {
+  background: linear-gradient(135deg, rgba(20, 50, 125, 0.4) 0%, rgba(214, 162, 24, 0.15) 100%) !important;
+}
+
+/* Ajustes de scrollbar refinado */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(214, 162, 24, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(214, 162, 24, 0.6);
+}
