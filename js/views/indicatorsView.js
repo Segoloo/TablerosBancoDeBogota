@@ -334,14 +334,6 @@ class IndicatorsView {
             </div>
           </div>
 
-          <!-- Causales de No Instalación -->
-          <div class="chart-card">
-            <div class="chart-title">Causales de No Instalación</div>
-            <div class="chart-container-wrapper">
-              <canvas id="chartCausalNoInstalacion"></canvas>
-            </div>
-          </div>
-
           <!-- Distribución por Tipologías -->
           <div class="chart-card">
             <div class="chart-title">Distribución por Tipología</div>
@@ -355,6 +347,14 @@ class IndicatorsView {
             <div class="chart-title">Estado de las Visitas</div>
             <div class="chart-container-wrapper">
               <canvas id="chartEstadoVisita"></canvas>
+            </div>
+          </div>
+
+          <!-- Causales de No Instalación -->
+          <div class="chart-card wide-chart">
+            <div class="chart-title">Causales de No Instalación</div>
+            <div class="chart-container-wrapper" style="height: 260px;">
+              <canvas id="chartCausalNoInstalacion"></canvas>
             </div>
           </div>
 
@@ -935,7 +935,7 @@ class IndicatorsView {
         this.charts.causalNoInst = new Chart(canvasNoInst, {
           type: 'bar',
           data: {
-            labels: sortedNoInst.map(x => x[0].substring(0, 25) + (x[0].length > 25 ? '...' : '')),
+            labels: sortedNoInst.map(x => x[0]),
             datasets: [{
               label: 'Reportes',
               data: sortedNoInst.map(x => x[1]),
@@ -950,11 +950,31 @@ class IndicatorsView {
             maintainAspectRatio: false,
             indexAxis: 'y',
             plugins: {
-              legend: { display: false }
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: this.colors.blueDark,
+                titleColor: this.colors.gold,
+                bodyColor: '#FAFAFA',
+                padding: 10,
+                cornerRadius: 8
+              }
             },
             scales: {
               x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-              y: { ticks: { color: '#FAFAFA' }, grid: { display: false } }
+              y: { 
+                ticks: { 
+                  color: '#FAFAFA',
+                  font: { size: 10.5 },
+                  callback: function(value) {
+                    const label = this.getLabelForValue(value);
+                    if (label && label.length > 35) {
+                      return label.substring(0, 35) + '...';
+                    }
+                    return label;
+                  }
+                }, 
+                grid: { display: false } 
+              }
             }
           }
         });
@@ -963,7 +983,7 @@ class IndicatorsView {
       // 3. Gráfico de Tipología
       const canvasTipo = document.getElementById('chartTipologia');
       if (canvasTipo) {
-        const entries = Object.entries(tipologiaCounts).filter(e => e[0] !== '');
+        const entries = Object.entries(tipologiaCounts).filter(e => e[0] !== '' && e[0] !== 'SIN TIPOLOGÍA');
         this.charts.tipologia = new Chart(canvasTipo, {
           type: 'doughnut',
           data: {
@@ -1178,10 +1198,30 @@ class IndicatorsView {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-              legend: { display: false }
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: this.colors.blueDark,
+                titleColor: this.colors.gold,
+                bodyColor: '#FAFAFA',
+                padding: 10,
+                cornerRadius: 8
+              }
             },
             scales: {
-              x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { display: false } },
+              x: { 
+                ticks: { 
+                  color: '#94a3b8', 
+                  font: { size: 9 },
+                  callback: function(value) {
+                    const label = this.getLabelForValue(value);
+                    if (label && label.length > 20) {
+                      return label.substring(0, 20) + '...';
+                    }
+                    return label;
+                  }
+                }, 
+                grid: { display: false } 
+              },
               y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } }
             }
           }
