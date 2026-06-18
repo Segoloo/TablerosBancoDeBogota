@@ -1631,9 +1631,25 @@ class IndicatorsView {
     // Almacenar registros de la página activa para usarlos al hacer clic
     this.currentPageRows = pageRows;
 
+    // Definir anchos de columna por sub-pestaña (en %)
+    let colWidths = [];
+    if (this.activeSubTab === 'desinstalacion') {
+      // 13 cols
+      colWidths = ['8%','14%','7%','8%','7%','9%','10%','8%','8%','9%','6%','5%','6%'];
+    } else if (this.activeSubTab === 'publicidad') {
+      // 15 cols
+      colWidths = ['7%','12%','6%','7%','6%','8%','9%','7%','5%','5%','5%','5%','5%','5%','4%'];
+    } else {
+      // 15 cols (capacitacion)
+      colWidths = ['7%','12%','6%','7%','6%','8%','9%','7%','7%','6%','7%','8%','5%','4%','6%'];
+    }
+
+    const colgroupHtml = `<colgroup>${colWidths.map(w => `<col style="width:${w}">`).join('')}</colgroup>`;
+
     // Armar tabla HTML
     let tableHtml = `
-      <table class="indicators-table">
+      <table class="indicators-table indicators-table--compact">
+        ${colgroupHtml}
         <thead>
           <tr>
             ${cols.map(c => `<th>${c.label}</th>`).join('')}
@@ -1677,7 +1693,9 @@ class IndicatorsView {
           valHtml = this.model.formatCellValue(c.key, rawVal);
         }
 
-        tableHtml += `<td>${valHtml}</td>`;
+        // Obtener texto plano para el tooltip (title) cuando el texto se trunca
+        const plainText = valHtml.replace(/<[^>]+>/g, '').trim();
+        tableHtml += `<td title="${plainText}">${valHtml}</td>`;
       });
       tableHtml += '</tr>';
     });

@@ -1269,8 +1269,7 @@ body {
 
 .table-responsive-wrapper {
   width: 100%;
-  overflow-x: auto;
-  scrollbar-width: thin;
+  overflow: hidden; /* sin barra horizontal */
 }
 
 /* Indicators Table UI */
@@ -1280,19 +1279,40 @@ body {
   font-size: 12px;
 }
 
+/* Variante compacta (tabla de muchas columnas sin scroll) */
+.indicators-table--compact {
+  table-layout: fixed;
+  font-size: 10.5px;
+}
+
+.indicators-table--compact th,
+.indicators-table--compact td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* En pantallas grandes puede mostrar algo de wrap en celdas de texto */
+@media (min-width: 1400px) {
+  .indicators-table--compact {
+    font-size: 11px;
+  }
+}
+
 .indicators-table th {
   background: rgba(255,255,255,0.03);
   border-bottom: 1px solid rgba(255,255,255,0.08);
-  padding: 12px 14px;
+  padding: 10px 6px;
   text-align: left;
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  font-size: 10px;
 }
 
 .indicators-table td {
-  padding: 10px 14px;
+  padding: 8px 6px;
   border-bottom: 1px solid rgba(255,255,255,0.04);
   color: var(--text-normal);
 }
