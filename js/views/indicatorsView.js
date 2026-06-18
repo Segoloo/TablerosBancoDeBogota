@@ -62,37 +62,115 @@ class IndicatorsView {
           <div class="filters-grid">
             <div class="filter-group">
               <label>Departamento</label>
-              <select id="selDepto">
-                <option value="">Todos</option>
-              </select>
+              <div class="excel-dropdown" id="ddDepto" data-filter="depto">
+                <button class="excel-dropdown-btn">Todos</button>
+                <div class="excel-dropdown-content hidden">
+                  <input type="text" placeholder="Buscar..." class="excel-dropdown-search">
+                  <div class="excel-dropdown-actions">
+                    <button class="btn-dd-all">Todos</button>
+                    <button class="btn-dd-none">Ninguno</button>
+                  </div>
+                  <div class="excel-dropdown-list"></div>
+                </div>
+              </div>
             </div>
             <div class="filter-group">
               <label>Zona Lineacom</label>
-              <select id="selZona">
-                <option value="">Todos</option>
-              </select>
+              <div class="excel-dropdown" id="ddZona" data-filter="zona">
+                <button class="excel-dropdown-btn">Todos</button>
+                <div class="excel-dropdown-content hidden">
+                  <input type="text" placeholder="Buscar..." class="excel-dropdown-search">
+                  <div class="excel-dropdown-actions">
+                    <button class="btn-dd-all">Todos</button>
+                    <button class="btn-dd-none">Ninguno</button>
+                  </div>
+                  <div class="excel-dropdown-list"></div>
+                </div>
+              </div>
             </div>
             <div class="filter-group">
               <label>Estado</label>
-              <select id="selEstado">
-                <option value="">Todos</option>
-                <option value="abierto">Abiertos</option>
-                <option value="cerrado">Cerrados</option>
-              </select>
+              <div class="excel-dropdown" id="ddEstado" data-filter="estado">
+                <button class="excel-dropdown-btn">Todos</button>
+                <div class="excel-dropdown-content hidden">
+                  <input type="text" placeholder="Buscar..." class="excel-dropdown-search">
+                  <div class="excel-dropdown-actions">
+                    <button class="btn-dd-all">Todos</button>
+                    <button class="btn-dd-none">Ninguno</button>
+                  </div>
+                  <div class="excel-dropdown-list"></div>
+                </div>
+              </div>
             </div>
             <div class="filter-group">
               <label>Cumple SLA</label>
-              <select id="selSLA">
-                <option value="">Todos</option>
-                <option value="si">Cumple SLA (SI)</option>
-                <option value="no">Fuera de SLA (NO)</option>
-              </select>
+              <div class="excel-dropdown" id="ddSLA" data-filter="sla">
+                <button class="excel-dropdown-btn">Todos</button>
+                <div class="excel-dropdown-content hidden">
+                  <input type="text" placeholder="Buscar..." class="excel-dropdown-search">
+                  <div class="excel-dropdown-actions">
+                    <button class="btn-dd-all">Todos</button>
+                    <button class="btn-dd-none">Ninguno</button>
+                  </div>
+                  <div class="excel-dropdown-list"></div>
+                </div>
+              </div>
             </div>
             <div class="filter-group">
               <label>Técnico / Ingeniero</label>
-              <select id="selTecnico">
-                <option value="">Todos</option>
-              </select>
+              <div class="excel-dropdown" id="ddTecnico" data-filter="tecnico">
+                <button class="excel-dropdown-btn">Todos</button>
+                <div class="excel-dropdown-content hidden">
+                  <input type="text" placeholder="Buscar..." class="excel-dropdown-search">
+                  <div class="excel-dropdown-actions">
+                    <button class="btn-dd-all">Todos</button>
+                    <button class="btn-dd-none">Ninguno</button>
+                  </div>
+                  <div class="excel-dropdown-list"></div>
+                </div>
+              </div>
+            </div>
+            <div class="filter-group">
+              <label>Tipología</label>
+              <div class="excel-dropdown" id="ddTipologia" data-filter="tipologia">
+                <button class="excel-dropdown-btn">Todos</button>
+                <div class="excel-dropdown-content hidden">
+                  <input type="text" placeholder="Buscar..." class="excel-dropdown-search">
+                  <div class="excel-dropdown-actions">
+                    <button class="btn-dd-all">Todos</button>
+                    <button class="btn-dd-none">Ninguno</button>
+                  </div>
+                  <div class="excel-dropdown-list"></div>
+                </div>
+              </div>
+            </div>
+            <div class="filter-group">
+              <label>Forma de Atención</label>
+              <div class="excel-dropdown" id="ddFormaAtencion" data-filter="formaAtencion">
+                <button class="excel-dropdown-btn">Todos</button>
+                <div class="excel-dropdown-content hidden">
+                  <input type="text" placeholder="Buscar..." class="excel-dropdown-search">
+                  <div class="excel-dropdown-actions">
+                    <button class="btn-dd-all">Todos</button>
+                    <button class="btn-dd-none">Ninguno</button>
+                  </div>
+                  <div class="excel-dropdown-list"></div>
+                </div>
+              </div>
+            </div>
+            <div class="filter-group">
+              <label>Estado de la Visita</label>
+              <div class="excel-dropdown" id="ddEstadoVisita" data-filter="estadoVisita">
+                <button class="excel-dropdown-btn">Todos</button>
+                <div class="excel-dropdown-content hidden">
+                  <input type="text" placeholder="Buscar..." class="excel-dropdown-search">
+                  <div class="excel-dropdown-actions">
+                    <button class="btn-dd-all">Todos</button>
+                    <button class="btn-dd-none">Ninguno</button>
+                  </div>
+                  <div class="excel-dropdown-list"></div>
+                </div>
+              </div>
             </div>
             <!-- Nuevos Filtros Avanzados -->
             <div class="filter-group">
@@ -107,7 +185,7 @@ class IndicatorsView {
               <label>Código de Formulario (FO)</label>
               <input type="text" id="txtFO" placeholder="Ej. FO-1234" class="table-search-box" style="width: 100%;">
             </div>
-            <div class="filter-actions">
+            <div class="filter-actions" style="grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
               <button class="btn-apply-filters" id="btnApplyFilters">✦ Filtrar</button>
               <button class="btn-reset-filters" id="btnResetFilters">↺ Reiniciar</button>
             </div>
@@ -135,17 +213,29 @@ class IndicatorsView {
     const deptos = new Set();
     const zonas = new Set();
     const tecnicos = new Set();
+    const tipologias = new Set();
+    const formasAtencion = new Set();
+    const estadosVisita = new Set();
 
     // Extraer valores únicos de todas las secciones
     const scanRows = (rows) => {
       if (!Array.isArray(rows)) return;
       rows.forEach(r => {
         if (r['DEPARTAMENTO']) deptos.add(r['DEPARTAMENTO'].toString().trim());
-        if (r['ZONA LINEACOM']) zonas.add(r['ZONA LINEACOM'].toString().trim());
-        else if (r['COORDINADOR ENCARGADO']) zonas.add(r['COORDINADOR ENCARGADO'].toString().trim());
+        
+        let zonaVal = r['ZONA LINEACOM'] || r['COORDINADOR ENCARGADO'];
+        if (zonaVal) zonas.add(zonaVal.toString().trim());
         
         const tec = r['TECNICO'] || r['INGENIERO DE CAMPO'] || r['TÉCNICO'];
         if (tec) tecnicos.add(tec.toString().trim());
+
+        const tipo = r['TIPOLOGIA'] || 'SIN TIPOLOGÍA';
+        tipologias.add(tipo.toString().trim());
+
+        if (r['FORMA DE ATENCION']) formasAtencion.add(r['FORMA DE ATENCION'].toString().trim());
+
+        const estVis = this.model.getRecordVisitStatus(r);
+        if (estVis) estadosVisita.add(estVis.toString().trim());
       });
     };
 
@@ -158,41 +248,163 @@ class IndicatorsView {
       scanRows(data.desinstalacion.abiertos);
     }
 
-    const fillSelect = (selectId, values, modelField) => {
-      const select = document.getElementById(selectId);
-      if (!select) return;
+    // Inicializar los Excel multi-select dropdowns
+    this.buildExcelDropdown('ddDepto', deptos, 'depto');
+    this.buildExcelDropdown('ddZona', zonas, 'zona');
+    
+    const estados = new Set(['ABIERTO', 'CERRADO']);
+    this.buildExcelDropdown('ddEstado', estados, 'estado');
+    
+    const slas = new Set(['SI', 'NO']);
+    this.buildExcelDropdown('ddSLA', slas, 'sla');
+    
+    this.buildExcelDropdown('ddTecnico', tecnicos, 'tecnico');
+    this.buildExcelDropdown('ddTipologia', tipologias, 'tipologia');
+    this.buildExcelDropdown('ddFormaAtencion', formasAtencion, 'formaAtencion');
+    this.buildExcelDropdown('ddEstadoVisita', estadosVisita, 'estadoVisita');
+
+    // Sincronizar inputs de texto
+    const txtPunto = document.getElementById('txtPunto');
+    if (txtPunto) txtPunto.value = this.model.filters.punto || '';
+    const txtTA = document.getElementById('txtTA');
+    if (txtTA) txtTA.value = this.model.filters.ta || '';
+    const txtFO = document.getElementById('txtFO');
+    if (txtFO) txtFO.value = this.model.filters.fo || '';
+  }
+
+  // Construye y controla el comportamiento tipo Excel del dropdown multi-select (Enfoque MVC)
+  buildExcelDropdown(ddId, values, modelField) {
+    const dropdown = document.getElementById(ddId);
+    if (!dropdown) return;
+
+    const btn = dropdown.querySelector('.excel-dropdown-btn');
+    const content = dropdown.querySelector('.excel-dropdown-content');
+    const searchInput = dropdown.querySelector('.excel-dropdown-search');
+    const listContainer = dropdown.querySelector('.excel-dropdown-list');
+    const btnAll = dropdown.querySelector('.btn-dd-all');
+    const btnNone = dropdown.querySelector('.btn-dd-none');
+
+    // Limpiar manejadores previos clonando elementos si es necesario o limpiando listeners
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    
+    const newBtnAll = btnAll.cloneNode(true);
+    btnAll.parentNode.replaceChild(newBtnAll, btnAll);
+
+    const newBtnNone = btnNone.cloneNode(true);
+    btnNone.parentNode.replaceChild(newBtnNone, btnNone);
+
+    // Cerrar si hace clic fuera
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target)) {
+        content.classList.add('hidden');
+      }
+    });
+
+    // Toggle dropdown
+    newBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.excel-dropdown-content').forEach(c => {
+        if (c !== content) c.classList.add('hidden');
+      });
+      content.classList.toggle('hidden');
+      if (!content.classList.contains('hidden')) {
+        searchInput.focus();
+      }
+    });
+
+    // Cargar opciones
+    const sortedValues = Array.from(values).sort();
+    
+    const renderList = (filterQuery = '') => {
+      listContainer.innerHTML = '';
+      const q = filterQuery.toLowerCase().trim();
       
-      // Limpiar opciones previas
-      select.innerHTML = '<option value="">Todos</option>';
-      
-      Array.from(values).sort().forEach(val => {
-        const opt = document.createElement('option');
-        opt.value = val;
-        opt.textContent = val;
-        if (this.model.filters[modelField] === val) {
-          opt.selected = true;
-        }
-        select.appendChild(opt);
+      sortedValues.forEach(val => {
+        if (q && !val.toLowerCase().includes(q)) return;
+        
+        const label = document.createElement('label');
+        label.className = 'excel-dropdown-item';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = val;
+        
+        // Si el filtro en el modelo incluye este valor, o está vacío (todos seleccionados)
+        const isChecked = this.model.filters[modelField].includes(val.toUpperCase()) || 
+                          this.model.filters[modelField].length === 0;
+        
+        checkbox.checked = isChecked;
+        
+        checkbox.addEventListener('change', () => {
+          this.updateFilterFromCheckboxes(dropdown, modelField);
+        });
+        
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(' ' + val));
+        listContainer.appendChild(label);
       });
     };
 
-    fillSelect('selDepto', deptos, 'depto');
-    fillSelect('selZona', zonas, 'zona');
-    fillSelect('selTecnico', tecnicos, 'tecnico');
+    // Buscar
+    searchInput.addEventListener('input', (e) => {
+      renderList(e.target.value);
+    });
 
-    // Sincronizar filtros fijos (Estado y SLA)
-    const selEstado = document.getElementById('selEstado');
-    if (selEstado) selEstado.value = this.model.filters.estado;
-    const selSLA = document.getElementById('selSLA');
-    if (selSLA) selSLA.value = this.model.filters.sla;
+    // Seleccionar Todos
+    newBtnAll.addEventListener('click', (e) => {
+      e.stopPropagation();
+      listContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+      this.updateFilterFromCheckboxes(dropdown, modelField);
+    });
 
-    // Sincronizar nuevos filtros de texto
-    const txtPunto = document.getElementById('txtPunto');
-    if (txtPunto) txtPunto.value = this.model.filters.punto;
-    const txtTA = document.getElementById('txtTA');
-    if (txtTA) txtTA.value = this.model.filters.ta;
-    const txtFO = document.getElementById('txtFO');
-    if (txtFO) txtFO.value = this.model.filters.fo;
+    // Seleccionar Ninguno
+    newBtnNone.addEventListener('click', (e) => {
+      e.stopPropagation();
+      listContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+      this.updateFilterFromCheckboxes(dropdown, modelField);
+    });
+
+    // Renderizado inicial de la lista
+    renderList();
+    this.updateDropdownButtonLabel(dropdown, modelField, sortedValues.length);
+  }
+
+  // Actualiza el filtro en el modelo basado en el estado actual de los checkboxes
+  updateFilterFromCheckboxes(dropdown, modelField) {
+    const listContainer = dropdown.querySelector('.excel-dropdown-list');
+    const checkedCheckboxes = listContainer.querySelectorAll('input[type="checkbox"]:checked');
+    const allCheckboxes = listContainer.querySelectorAll('input[type="checkbox"]');
+    
+    if (checkedCheckboxes.length === allCheckboxes.length) {
+      this.model.filters[modelField] = [];
+    } else {
+      this.model.filters[modelField] = Array.from(checkedCheckboxes).map(cb => cb.value.toUpperCase());
+    }
+    
+    this.updateDropdownButtonLabel(dropdown, modelField, allCheckboxes.length);
+  }
+
+  // Actualiza el texto del botón del dropdown según lo seleccionado
+  updateDropdownButtonLabel(dropdown, modelField, totalItemsCount) {
+    const btn = dropdown.querySelector('.excel-dropdown-btn');
+    const selected = this.model.filters[modelField];
+    
+    if (selected.length === 0) {
+      btn.textContent = 'Todos';
+      btn.classList.remove('has-filter');
+    } else if (selected.length === totalItemsCount) {
+      btn.textContent = 'Todos';
+      btn.classList.remove('has-filter');
+    } else if (selected.length === 1) {
+      const listContainer = dropdown.querySelector('.excel-dropdown-list');
+      const checkedOne = listContainer.querySelector('input[type="checkbox"]:checked');
+      btn.textContent = checkedOne ? checkedOne.value : '1 Seleccionado';
+      btn.classList.add('has-filter');
+    } else {
+      btn.textContent = `${selected.length} seleccionados`;
+      btn.classList.add('has-filter');
+    }
   }
 
   setupEvents() {
@@ -210,36 +422,40 @@ class IndicatorsView {
     });
 
     // 2. Manejo de Filtros
-    const getFilters = () => {
-      return {
-        depto: document.getElementById('selDepto')?.value || '',
-        zona: document.getElementById('selZona')?.value || '',
-        estado: document.getElementById('selEstado')?.value || '',
-        sla: document.getElementById('selSLA')?.value || '',
-        tecnico: document.getElementById('selTecnico')?.value || '',
-        punto: document.getElementById('txtPunto')?.value || '',
-        ta: document.getElementById('txtTA')?.value || '',
-        fo: document.getElementById('txtFO')?.value || ''
-      };
-    };
-
     document.getElementById('btnApplyFilters')?.addEventListener('click', () => {
-      this.model.filters = getFilters();
+      // Sincronizar inputs de texto con el modelo
+      this.model.filters.punto = document.getElementById('txtPunto')?.value || '';
+      this.model.filters.ta = document.getElementById('txtTA')?.value || '';
+      this.model.filters.fo = document.getElementById('txtFO')?.value || '';
+      
       if (this.filterChangeCallback) this.filterChangeCallback();
     });
 
     document.getElementById('btnResetFilters')?.addEventListener('click', () => {
-      this.model.filters = { depto: '', zona: '', estado: '', sla: '', tecnico: '', punto: '', ta: '', fo: '' };
+      this.model.filters = {
+        depto: [],
+        zona: [],
+        estado: [],
+        sla: [],
+        tecnico: [],
+        tipologia: [],
+        formaAtencion: [],
+        estadoVisita: [],
+        punto: '',
+        ta: '',
+        fo: ''
+      };
       
-      // Resetear inputs visualmente
-      const selDepto = document.getElementById('selDepto'); if (selDepto) selDepto.value = '';
-      const selZona = document.getElementById('selZona'); if (selZona) selZona.value = '';
-      const selEstado = document.getElementById('selEstado'); if (selEstado) selEstado.value = '';
-      const selSLA = document.getElementById('selSLA'); if (selSLA) selSLA.value = '';
-      const selTecnico = document.getElementById('selTecnico'); if (selTecnico) selTecnico.value = '';
+      // Resetear inputs de texto
       const txtPunto = document.getElementById('txtPunto'); if (txtPunto) txtPunto.value = '';
       const txtTA = document.getElementById('txtTA'); if (txtTA) txtTA.value = '';
       const txtFO = document.getElementById('txtFO'); if (txtFO) txtFO.value = '';
+      
+      // Volver a poblar filtros
+      const rawData = this.model.rawIndicators;
+      if (rawData) {
+        this.populateFilters(rawData);
+      }
       
       if (this.filterChangeCallback) this.filterChangeCallback();
     });

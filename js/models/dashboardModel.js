@@ -4,16 +4,19 @@ class DashboardModel {
   constructor() {
     this.rawIndicators = null;
     
-    // Filtros del tablero "Indicadores CB" (Slicers)
+    // Filtros del tablero "Indicadores CB" (Slicers) - Cambiados a arrays para Excel-style multi-select
     this.filters = {
-      depto: '',
-      zona: '', // Renombrado de Red/Coordinador a Zona Lineacom
-      estado: '',
-      sla: '',
-      tecnico: '',
-      punto: '', // Filtro por Código de Punto (ID Sitio)
-      ta: '',    // Filtro por Código de Tarea (TA)
-      fo: ''     // Filtro por Código de Formulario (FO)
+      depto: [],
+      zona: [],
+      estado: [],
+      sla: [],
+      tecnico: [],
+      tipologia: [],
+      formaAtencion: [],
+      estadoVisita: [],
+      punto: '',
+      ta: '',
+      fo: ''
     };
 
     // Términos de búsqueda por sub-sección
@@ -140,6 +143,44 @@ class DashboardModel {
     return value.toString();
   }
 
+  // Resuelve dinámicamente el estado de una visita buscando en las respuestas de formularios si está vacío en el registro
+  getRecordVisitStatus(r) {
+    let status = r['ESTADO DE LA VISITA'] || r['ESTADO'] || '';
+    status = status.toString().trim().toUpperCase();
+    
+    if (!status && Array.isArray(r.FORMS)) {
+      for (const f of r.FORMS) {
+        const resps = f.RESPUESTAS || {};
+        for (const [q, a] of Object.entries(resps)) {
+          const qUp = q.toUpperCase().trim();
+          const aStr = String(a).toUpperCase().trim();
+          if (qUp === 'ESTADO' || qUp === 'ESTADO DE LA VISITA' || qUp === 'ESTADO RESULTADO ACTIVIDAD') {
+            status = aStr;
+            break;
+          }
+        }
+        if (status) break;
+      }
+    }
+    
+    if (!status) return 'SIN REGISTRO';
+    
+    if (status.includes('NO_EXITOSO') || status.includes('NO EXITOSA') || status.includes('ILOCALIZADO') || status.includes('FALLIDA')) {
+      return 'NO EXITOSA';
+    }
+    if (status.includes('EXITOSO') || status.includes('EXITOSA') || status === 'EJECUTADO') {
+      return 'EXITOSA';
+    }
+    if (status.includes('CANCELADO') || status.includes('CANCELADA')) {
+      return 'CANCELADA';
+    }
+    if (status.includes('TELEFONICA') || status.includes('TELEFÓNICA')) {
+      return 'GESTIÓN TELEFÓNICA';
+    }
+    
+    return status;
+  }
+
   // Obtener fechas de inicio y cierre de un registro en función de la pestaña
   getRecordDates(r, tab) {
     let startVal = null;
@@ -218,50 +259,71 @@ class DashboardModel {
     
     return list.filter(r => {
       // 1. Filtro Departamento
-      if (slicers.depto) {
+      if (Array.isArray(slicers.depto) && slicers.depto.length > 0) {
         const dep = (r['DEPARTAMENTO'] || '').toString().trim().toUpperCase();
-        if (dep !== slicers.depto.toUpperCase()) return false;
+        if (!slicers.depto.includes(dep)) return false;
       }
 
       // 2. Filtro Zona Lineacom
-      if (slicers.zona) {
+      if (Array.isArray(slicers.zona) && slicers.zona.length > 0) {
         const zonaVal = (r['ZONA LINEACOM'] || r['COORDINADOR ENCARGADO'] || '').toString().trim().toUpperCase();
-        if (zonaVal !== slicers.zona.toUpperCase()) return false;
+        if (!slicers.zona.includes(zonaVal)) return false;
       }
 
       // 3. Filtro Estado (Abierto / Cerrado)
-      if (slicers.estado) {
+      if (Array.isArray(slicers.estado) && slicers.estado.length > 0) {
         const isAb = !!r._is_abierto;
-        if (slicers.estado === 'abierto' && !isAb) return false;
-        if (slicers.estado === 'cerrado' && isAb) return false;
+        const estStr = isAb ? 'ABIERTO' : 'CERRADO';
+        if (!slicers.estado.includes(estStr)) return false;
       }
 
       // 4. Filtro SLA
-      if (slicers.sla) {
+      if (Array.isArray(slicers.sla) && slicers.sla.length > 0) {
         const field = (tab === 'desinstalacion') ? 'DENTRO DE LOS SLA' : 'CUMPLE SLA';
-        const val = (r[field] || '').toString().trim().toUpperCase();
-        if (slicers.sla.toUpperCase() !== val) return false;
+        let val = (r[field] || '').toString().trim().toUpperCase();
+        // Normalización rápida para SLAs
+        if (val === 'SI' || val === 'CUMPLE') val = 'SI';
+        else if (val === 'NO' || val === 'VENCIDO') val = 'NO';
+        if (!slicers.sla.includes(val)) return false;
       }
 
       // 5. Filtro Técnico / Ingeniero de campo
-      if (slicers.tecnico) {
+      if (Array.isArray(slicers.tecnico) && slicers.tecnico.length > 0) {
         const tec = (r['TECNICO'] || r['INGENIERO DE CAMPO'] || r['TÉCNICO'] || '').toString().trim().toUpperCase();
-        if (tec !== slicers.tecnico.toUpperCase()) return false;
+        if (!slicers.tecnico.includes(tec)) return false;
       }
 
-      // 5.1. Filtro por Código de Punto (ID Sitio)
+      // 5.1. Filtro por Tipología
+      if (Array.isArray(slicers.tipologia) && slicers.tipologia.length > 0) {
+        const tipo = (r['TIPOLOGIA'] || 'SIN TIPOLOGÍA').toString().trim().toUpperCase();
+        if (!slicers.tipologia.includes(tipo)) return false;
+      }
+
+      // 5.2. Filtro por Forma de Atención
+      if (Array.isArray(slicers.formaAtencion) && slicers.formaAtencion.length > 0) {
+        const forma = (r['FORMA DE ATENCION'] || '').toString().trim().toUpperCase();
+        if (!slicers.formaAtencion.includes(forma)) return false;
+      }
+
+      // 5.3. Filtro por Estado de la Visita
+      if (Array.isArray(slicers.estadoVisita) && slicers.estadoVisita.length > 0) {
+        const estVis = this.getRecordVisitStatus(r).toUpperCase();
+        if (!slicers.estadoVisita.includes(estVis)) return false;
+      }
+
+      // 5.4. Filtro por Código de Punto (ID Sitio)
       if (slicers.punto) {
         const puntoVal = (r['ID SITIO'] || '').toString().trim().toUpperCase();
         if (!puntoVal.includes(slicers.punto.toUpperCase())) return false;
       }
 
-      // 5.2. Filtro por Código de Tarea (TA)
+      // 5.5. Filtro por Código de Tarea (TA)
       if (slicers.ta) {
         const taVal = (r['CODIGO_TAREA'] || r['NRO PEDIDO / ORDEN DE COMPRA'] || '').toString().trim().toUpperCase();
         if (!taVal.includes(slicers.ta.toUpperCase())) return false;
       }
 
-      // 5.3. Filtro por Código de Formulario (FO)
+      // 5.6. Filtro por Código de Formulario (FO)
       if (slicers.fo) {
         if (!Array.isArray(r['FORMS'])) return false;
         const foVal = slicers.fo.trim().toUpperCase();

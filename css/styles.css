@@ -2184,3 +2184,150 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(214, 162, 24, 0.6);
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   EXCEL-STYLE MULTI-SELECT DROPDOWNS
+   ══════════════════════════════════════════════════════════════════ */
+.excel-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.excel-dropdown-btn {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(0, 26, 58, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: var(--text-normal);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all var(--transition-fast);
+}
+
+.excel-dropdown-btn::after {
+  content: '▼';
+  font-size: 8px;
+  color: var(--text-muted);
+  margin-left: 8px;
+  transition: transform var(--transition-fast);
+}
+
+.excel-dropdown-btn:hover {
+  background: rgba(0, 26, 58, 0.6);
+  border-color: var(--bdb-gold-glow);
+}
+
+.excel-dropdown-btn.has-filter {
+  border-color: var(--bdb-gold);
+  background: rgba(214, 162, 24, 0.08);
+  font-weight: 700;
+  color: var(--bdb-gold);
+}
+
+.excel-dropdown-content {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: rgba(0, 26, 58, 0.98);
+  border: 1.5px solid var(--bdb-gold);
+  border-radius: 12px;
+  padding: 12px;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(15px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: fadeIn var(--transition-fast) forwards;
+}
+
+.excel-dropdown-search {
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: var(--text-light);
+  font-size: 12px;
+  outline: none;
+}
+
+.excel-dropdown-search:focus {
+  border-color: var(--bdb-gold);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.excel-dropdown-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.excel-dropdown-actions button {
+  flex: 1;
+  padding: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: var(--text-normal);
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.excel-dropdown-actions button:hover {
+  background: var(--bdb-blue);
+  color: #fff;
+  border-color: var(--bdb-gold);
+}
+
+.excel-dropdown-list {
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 4px;
+}
+
+.excel-dropdown-list::-webkit-scrollbar {
+  width: 5px;
+}
+.excel-dropdown-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.excel-dropdown-list::-webkit-scrollbar-thumb {
+  background: var(--bdb-gold);
+  border-radius: 4px;
+}
+
+.excel-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-normal);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background var(--transition-fast);
+}
+
+.excel-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-light);
+}
+
+.excel-dropdown-item input[type="checkbox"] {
+  accent-color: var(--bdb-gold);
+  cursor: pointer;
+}
