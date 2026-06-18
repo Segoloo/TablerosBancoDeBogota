@@ -1311,7 +1311,7 @@ class IndicatorsView {
       // 4b. Gráfico Zona Lineacom
       const canvasZona = document.getElementById('chartZonaPublicidad');
       if (canvasZona) {
-        const entries = Object.entries(zonaCounts).sort((a, b) => b[1] - a[1]);
+        const entries = Object.entries(zonaCounts).filter(e => e[0] !== 'SIN ZONA').sort((a, b) => b[1] - a[1]);
         this.charts.zonaPub = new Chart(canvasZona, {
           type: 'doughnut',
           data: {
