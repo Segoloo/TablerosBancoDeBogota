@@ -491,7 +491,130 @@ class IndicatorsView {
     }
 
     // HTML de las tarjetas
+    let puntoKpiHtml = '';
+    if (this.activeSubTab === 'publicidad' && (this.model.filters.punto || '').trim() !== '') {
+      const puntoFilterVal = this.model.filters.punto.trim();
+      
+      puntoKpiHtml = `
+        <div class="point-advertising-kpi-card fade-in" style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(0, 26, 58, 0.8) 0%, rgba(20, 50, 125, 0.45) 100%); border: 1.5px solid var(--bdb-gold); border-radius: 16px; padding: 22px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); margin-bottom: 8px; position: relative; overflow: hidden;">
+          <div style="position: absolute; top: -20px; right: -20px; font-size: 120px; opacity: 0.03; pointer-events: none; transform: rotate(-15deg);">📍</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid rgba(214, 162, 24, 0.25); padding-bottom: 14px; margin-bottom: 18px;">
+            <div>
+              <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--bdb-gold); letter-spacing: 1.2px; display: inline-flex; align-items: center; gap: 6px;">
+                <span class="btn-spinner" style="width: 8px; height: 8px; border-width: 1px; animation-duration: 2s; border-color: var(--bdb-gold) transparent transparent transparent;"></span> Monitoreo Detallado de Publicidad por Punto
+              </span>
+              <h3 style="font-size: 20px; margin: 4px 0 0 0; color: #fff; font-weight: 800;">
+                Código de Punto (ID Sitio): <span style="font-family: var(--font-sans); color: var(--bdb-yellow-pref); text-shadow: 0 0 8px rgba(235, 205, 90, 0.4);">${puntoFilterVal}</span>
+              </h3>
+            </div>
+            <div style="text-align: right;">
+              <span class="badge" style="background: rgba(214, 162, 24, 0.12); color: var(--bdb-gold); border: 1.5px solid rgba(214, 162, 24, 0.35); font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 20px;">
+                ${total.toLocaleString('es-CO')} Actividad(es) Encontrada(s)
+              </span>
+            </div>
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+      `;
+      
+      rows.forEach((r, idx) => {
+        const taCode = r['CODIGO_TAREA'] || r['NRO PEDIDO / ORDEN DE COMPRA'] || '—';
+        const fecha = r['FECHA LISTA'] || r['FECHA DE FIN'] || '—';
+        const tipoLocal = r['TIPOLOGIA'] || '—';
+        const estab = r['ESTABLECIMIENTO'] || '—';
+        const tecnico = r['TECNICO'] || r['INGENIERO DE CAMPO'] || r['TÉCNICO'] || '—';
+        const depto = r['DEPARTAMENTO'] || '—';
+        
+        puntoKpiHtml += `
+          <div style="background: rgba(255, 255, 255, 0.02); border: 1.5px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 16px; transition: border-color var(--transition-fast);" onmouseover="this.style.borderColor='var(--bdb-gold-glow)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.05)'">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; border-bottom: 1.5px solid rgba(255, 255, 255, 0.03); padding-bottom: 10px;">
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <span style="background: var(--bdb-blue); color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; font-family: var(--font-mono);">TAREA ${idx + 1}</span>
+                <strong style="color: var(--bdb-gold); font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.2px;">TA: ${taCode}</strong>
+                <span style="font-size: 12px; color: var(--text-muted);">| Fecha: <span style="color: var(--text-normal); font-weight: 500;">${fecha}</span></span>
+                <span style="font-size: 12px; color: var(--text-muted);">| Tipología: <span style="color: var(--bdb-yellow-pref); font-weight: 600;">${tipoLocal}</span></span>
+                <span style="font-size: 12px; color: var(--text-muted);">| Técnico: <span style="color: var(--text-normal); font-weight: 500;">${tecnico}</span></span>
+              </div>
+              <div style="font-size: 12px; color: var(--text-muted); font-weight: 500; background: rgba(255,255,255,0.03); padding: 4px 10px; border-radius: 8px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${estab} (${depto})">
+                🏢 ${estab} (${depto})
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+        `;
+        
+        const elementsList = [
+          { label: 'Marquesina Exterior', install: 'SE_INSTALA_MARQUESINA', causal: 'CAUSAL_NO_INSTALA_MARQUESINA', icon: '🏪' },
+          { label: 'Cartel Saliente', install: 'SE_INSTALA_CARTEL', causal: 'CAUSAL_NO_INSTALA_CARTEL', icon: '🪧' },
+          { label: 'Sticker Vidrio', install: 'SE_INSTALA_STICKER_VIDRIO', causal: 'CAUSAL_NO_INSTALA_STICKER_VIDRIO', icon: '🔵' },
+          { label: 'Sticker Muro', install: 'SE_INSTALA_STICKER_MURO', causal: 'CAUSAL_NO_INSTALA_STICKER_MURO', icon: '🟡' },
+          { label: 'Hablador', install: 'SE_INSTALA_HABLADOR', causal: 'CAUSAL_NO_INSTALA_HABLADOR', icon: '📋' }
+        ];
+        
+        elementsList.forEach(el => {
+          const installVal = (r[el.install] || '').trim().toUpperCase();
+          const causalVal = (r[el.causal] || '').trim();
+          
+          let statusBadge = '';
+          
+          if (installVal === 'SI') {
+            statusBadge = `
+              <div style="background: rgba(0, 135, 110, 0.08); border: 1.5px solid rgba(0, 135, 110, 0.35); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; height: 100%; min-height: 72px; justify-content: space-between; box-shadow: 0 4px 10px rgba(0, 135, 110, 0.05);">
+                <div style="font-size: 12px; font-weight: 700; color: var(--text-normal); display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                  <span style="font-size: 16px;">${el.icon}</span> <span>${el.label}</span>
+                </div>
+                <span style="font-size: 13px; font-weight: 800; color: #10b981; display: inline-flex; align-items: center; gap: 4px;">
+                  <span style="display:inline-block; width: 6px; height: 6px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981;"></span> ✓ Instalado
+                </span>
+              </div>
+            `;
+          } else if (installVal === 'NO') {
+            const motivo = causalVal && causalVal !== 'N/A' && causalVal !== 'null' ? causalVal : 'Sin motivo registrado';
+            statusBadge = `
+              <div style="background: rgba(205, 50, 50, 0.08); border: 1.5px solid rgba(205, 50, 50, 0.35); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; height: 100%; min-height: 72px; justify-content: space-between; box-shadow: 0 4px 10px rgba(205, 50, 50, 0.05);">
+                <div style="font-size: 12px; font-weight: 700; color: var(--text-normal); display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                  <span style="font-size: 16px;">${el.icon}</span> <span>${el.label}</span>
+                </div>
+                <div>
+                  <span style="font-size: 13px; font-weight: 800; color: #ff6b6b; display: inline-flex; align-items: center; gap: 4px;">
+                    <span style="display:inline-block; width: 6px; height: 6px; background: #ff6b6b; border-radius: 50%; box-shadow: 0 0 8px #ff6b6b;"></span> ✗ No Instalado
+                  </span>
+                  <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.3; background: rgba(0,0,0,0.15); padding: 4px 8px; border-radius: 6px; border-left: 2px solid #ff6b6b; word-break: break-word;">
+                    ${motivo}
+                  </div>
+                </div>
+              </div>
+            `;
+          } else {
+            statusBadge = `
+              <div style="background: rgba(255, 255, 255, 0.02); border: 1.5px solid rgba(255, 255, 255, 0.06); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; height: 100%; min-height: 72px; justify-content: space-between;">
+                <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                  <span style="font-size: 16px; opacity: 0.5;">${el.icon}</span> <span>${el.label}</span>
+                </div>
+                <span style="font-size: 13px; color: var(--text-muted); font-weight: 500;">— Sin Datos</span>
+              </div>
+            `;
+          }
+          
+          puntoKpiHtml += `<div>${statusBadge}</div>`;
+        });
+        
+        puntoKpiHtml += `
+            </div>
+          </div>
+        `;
+      });
+      
+      puntoKpiHtml += `
+          </div>
+        </div>
+      `;
+    }
+
+    // HTML de las tarjetas
     container.innerHTML = `
+      ${puntoKpiHtml}
+      
       <!-- Total Registros -->
       <div class="kpi-card-dashboard clickable-kpi" id="kpiTotalCard" title="Ver lista completa">
         <div class="kpi-icon-db">📋</div>
