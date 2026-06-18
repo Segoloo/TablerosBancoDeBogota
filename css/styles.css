@@ -1999,44 +1999,331 @@ body {
    UPGRADE ESTÉTICO PREMIUM BANCO DE BOGOTÁ (ADICIONES)
    ══════════════════════════════════════════════════════════════════ */
 
-/* Fondo corporativo dinámico */
+/* ─── Fondo corporativo dinámico con malla animada ─── */
 body {
   background: radial-gradient(circle at 50% 50%, #001e46 0%, #000a18 100%) !important;
 }
 
-/* Animación de entrada premium con desplazamiento suave */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
+/* Fondo premium con malla geométrica sutil animada en el área de contenido */
+.content-area {
+  position: relative;
+  z-index: 1;
+}
+
+.content-area::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(20, 50, 125, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 60% at 80% 20%, rgba(214, 162, 24, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 70% 40% at 50% 80%, rgba(0, 135, 110, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+  animation: bgMeshShift 20s ease-in-out infinite alternate;
+}
+
+@keyframes bgMeshShift {
+  0% {
+    background-position: 0% 0%, 100% 0%, 50% 100%;
+    opacity: 0.85;
   }
-  to {
+  50% {
     opacity: 1;
-    transform: translateY(0);
   }
+  100% {
+    background-position: 10% 10%, 90% 10%, 50% 90%;
+    opacity: 0.85;
+  }
+}
+
+/* ─── HOME HUB: Fondo Hero con glassmorphism corporativo ─── */
+.home-hub-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 40px 30px !important;
+  background:
+    linear-gradient(165deg,
+      rgba(0, 26, 58, 0.65) 0%,
+      rgba(20, 50, 125, 0.18) 35%,
+      rgba(214, 162, 24, 0.06) 65%,
+      rgba(0, 15, 36, 0.7) 100%) !important;
+  border: 1px solid rgba(214, 162, 24, 0.12) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Formas geométricas flotantes decorativas en el Home Hub */
+.home-hub-wrapper::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -60px;
+  width: 320px;
+  height: 320px;
+  border: 1.5px solid rgba(214, 162, 24, 0.08);
+  border-radius: 50%;
+  animation: floatGeo 18s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.home-hub-wrapper::after {
+  content: '';
+  position: absolute;
+  bottom: -60px;
+  left: -40px;
+  width: 240px;
+  height: 240px;
+  border: 1.5px solid rgba(20, 50, 125, 0.12);
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  animation: floatGeo 22s ease-in-out infinite reverse;
+  pointer-events: none;
+}
+
+@keyframes floatGeo {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(15px, -10px) rotate(8deg); }
+  50% { transform: translate(-8px, 12px) rotate(-4deg); }
+  75% { transform: translate(10px, 8px) rotate(6deg); }
+}
+
+/* Título de bienvenida con gradiente premium BdB */
+.home-hub-welcome {
+  background: linear-gradient(135deg, #FFFFFF 0%, #f8f0d8 40%, var(--bdb-gold) 80%, var(--bdb-yellow-pref) 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-size: 34px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.5px !important;
+  text-shadow: none !important;
+}
+
+.home-hub-sub {
+  color: rgba(214, 162, 24, 0.75) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: 2px !important;
+}
+
+/* ─── HUB CARDS: Efecto premium con borde gradiente animado ─── */
+.hub-card {
+  border: 1px solid rgba(214, 162, 24, 0.1) !important;
+  background:
+    linear-gradient(145deg,
+      rgba(0, 26, 58, 0.6) 0%,
+      rgba(0, 30, 70, 0.35) 50%,
+      rgba(0, 15, 36, 0.5) 100%) !important;
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.hub-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    400px circle at var(--card-glow-x, 50%) var(--card-glow-y, 50%),
+    rgba(214, 162, 24, 0.08),
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hub-card:hover:not(.disabled)::before {
+  opacity: 1;
+}
+
+.hub-card:hover:not(.disabled) {
+  transform: translateY(-6px) !important;
+  border-color: rgba(214, 162, 24, 0.5) !important;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.55),
+    0 0 30px rgba(214, 162, 24, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Tarjeta deshabilitada Premium del Hub */
+.hub-card.disabled {
+  border-color: rgba(255, 255, 255, 0.04) !important;
+  background: rgba(0, 15, 36, 0.3) !important;
+  opacity: 0.4 !important;
+}
+
+.hub-card.disabled:hover {
+  opacity: 0.6 !important;
+  border-color: rgba(214, 162, 24, 0.2) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.55), 0 0 20px rgba(214, 162, 24, 0.06) !important;
+}
+
+/* ─── INDICADORES CB: Wrapper con acento visual corporativo ─── */
+.indicators-dashboard-wrapper {
+  position: relative;
+  border-radius: 20px;
+  padding: 28px 26px !important;
+  background:
+    linear-gradient(170deg,
+      rgba(0, 26, 58, 0.5) 0%,
+      rgba(20, 50, 125, 0.12) 30%,
+      rgba(0, 15, 36, 0.6) 70%,
+      rgba(214, 162, 24, 0.03) 100%) !important;
+  border: 1px solid rgba(214, 162, 24, 0.1) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+  overflow: hidden;
+}
+
+/* Línea de acento dorada animada en la parte superior */
+.indicators-dashboard-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(214, 162, 24, 0.1) 10%,
+    var(--bdb-gold) 50%,
+    rgba(214, 162, 24, 0.1) 90%,
+    transparent 100%);
+  animation: accentSlide 8s ease-in-out infinite;
+}
+
+@keyframes accentSlide {
+  0%, 100% { opacity: 0.6; transform: scaleX(0.7); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+/* Textura de ruido sutil */
+.indicators-dashboard-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+/* ─── BOARD HEADER MEJORADO ─── */
+.board-header {
+  position: relative;
+  z-index: 1;
+  padding-bottom: 14px !important;
+  border-bottom: 1px solid rgba(214, 162, 24, 0.1) !important;
+}
+
+.board-title-row h2 {
+  background: linear-gradient(135deg, #FFFFFF 30%, var(--bdb-gold) 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-size: 24px !important;
+  font-weight: 800 !important;
+}
+
+.board-tag {
+  background: rgba(214, 162, 24, 0.1) !important;
+  border: 1px solid rgba(214, 162, 24, 0.35) !important;
+  color: var(--bdb-gold) !important;
+  font-size: 9px !important;
+  padding: 3px 10px !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(6px);
+}
+
+/* Animación de entrada premium */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .sub-tab-panel-container, .indicators-dashboard-wrapper, .home-hub-wrapper, .custom-modal-container {
   animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
-/* Tarjetas con Efecto Glassmorphism Refinado */
+/* ─── TARJETAS con glassmorphism refinado ─── */
 .filters-panel, .chart-card, .table-section-card, .kpi-card-dashboard {
   background: rgba(0, 26, 58, 0.45) !important;
   backdrop-filter: blur(14px) !important;
   -webkit-backdrop-filter: blur(14px) !important;
-  border: 1px solid rgba(214, 162, 24, 0.16) !important;
-  box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.4) !important;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  border: 1px solid rgba(214, 162, 24, 0.12) !important;
+  box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.35) !important;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  position: relative;
+  z-index: 1;
 }
 
-.filters-panel:hover, .chart-card:hover, .table-section-card:hover, .kpi-card-dashboard:hover {
+.filters-panel:hover, .chart-card:hover, .table-section-card:hover {
+  border-color: rgba(214, 162, 24, 0.3) !important;
+  box-shadow: 0 14px 45px 0 rgba(214, 162, 24, 0.08), inset 0 0 15px rgba(255, 255, 255, 0.01) !important;
+}
+
+.kpi-card-dashboard:hover {
   border-color: rgba(214, 162, 24, 0.4) !important;
   box-shadow: 0 14px 45px 0 rgba(214, 162, 24, 0.12), inset 0 0 15px rgba(255,255,255,0.01) !important;
   transform: translateY(-2px);
 }
 
-/* Brillo y animación de respiración para KPIs Premium */
+/* ─── CHART CARDS con borde animado al hover ─── */
+.chart-card {
+  overflow: hidden;
+}
+
+.chart-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, transparent 30%, rgba(214, 162, 24, 0.3) 50%, transparent 70%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.chart-card:hover::before {
+  opacity: 1;
+}
+
+/* Chart title con acento */
+.chart-title {
+  position: relative;
+  z-index: 1;
+  padding-left: 12px !important;
+}
+
+.chart-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--bdb-gold) 0%, rgba(214, 162, 24, 0.2) 100%);
+}
+
+/* KPIs Premium con brillo animado */
 .premium-kpi {
   background: linear-gradient(135deg, rgba(20, 50, 125, 0.45) 0%, rgba(214, 162, 24, 0.15) 100%) !important;
   border: 1px solid rgba(214, 162, 24, 0.45) !important;
@@ -2050,7 +2337,16 @@ body {
   100% { border-color: rgba(214, 162, 24, 0.45); box-shadow: 0 8px 30px rgba(214, 162, 24, 0.15); }
 }
 
-/* Transiciones interactivas para inputs y desplegables */
+/* ─── STATUS PANEL mejorado ─── */
+.home-hub-status-panel {
+  background:
+    linear-gradient(135deg, rgba(0, 26, 58, 0.6) 0%, rgba(20, 50, 125, 0.2) 100%) !important;
+  border: 1px solid rgba(214, 162, 24, 0.15) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* ─── TRANSICIONES Y EFECTOS INTERACTIVOS ─── */
 .table-search-box, .filter-group select {
   transition: all var(--transition-fast) !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
@@ -2062,7 +2358,7 @@ body {
   background: #000c1c !important;
 }
 
-/* Botones de acción dinámicos */
+/* Botones de acción */
 .btn-apply-filters, .btn-apply-filters-small {
   background: linear-gradient(135deg, var(--bdb-blue) 0%, #1c459c 100%) !important;
   border: 1px solid rgba(214, 162, 24, 0.3) !important;
@@ -2086,7 +2382,7 @@ body {
   color: #fff !important;
 }
 
-/* Filas de la tabla con efectos hover refinados */
+/* ─── TABLA DE REGISTROS ─── */
 .indicators-table tr {
   transition: background-color 0.2s ease, transform 0.15s ease !important;
 }
@@ -2099,7 +2395,7 @@ body {
   transform: scale(0.995);
 }
 
-/* Diseño interactivo en Sub-pestañas internas */
+/* ─── SUB-PESTAÑAS con gradiente activo ─── */
 .sub-tab-btn {
   background: rgba(255, 255, 255, 0.02) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -2119,7 +2415,7 @@ body {
   box-shadow: 0 4px 15px rgba(214, 162, 24, 0.28) !important;
 }
 
-/* Pastillas informativas premium para el Kit publicitario */
+/* ─── KIT PUBLICITARIO BADGES ─── */
 .pub-kit-badge {
   display: inline-flex;
   align-items: center;
@@ -2153,7 +2449,7 @@ body {
   border-color: rgba(148, 163, 184, 0.2);
 }
 
-/* Efectos en la barra lateral */
+/* ─── SIDEBAR EFECTOS ─── */
 .sidebar-item {
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
@@ -2168,7 +2464,19 @@ body {
   background: linear-gradient(135deg, rgba(20, 50, 125, 0.4) 0%, rgba(214, 162, 24, 0.15) 100%) !important;
 }
 
-/* Ajustes de scrollbar refinado */
+/* ─── TOPBAR con línea de acento inferior ─── */
+.topbar {
+  border-bottom: none !important;
+  box-shadow: 0 1px 0 rgba(214, 162, 24, 0.1), 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ─── SIDEBAR con gradiente refinado ─── */
+.sidebar {
+  background: linear-gradient(180deg, rgba(0, 15, 36, 0.7) 0%, rgba(0, 26, 58, 0.4) 50%, rgba(0, 15, 36, 0.7) 100%) !important;
+  border-right: 1px solid rgba(214, 162, 24, 0.06) !important;
+}
+
+/* ─── SCROLLBAR REFINADO ─── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

@@ -4,15 +4,15 @@ class IndicatorsView {
   constructor(containerId, model) {
     this.containerId = containerId;
     this.model = model;
-    
+
     this.activeSubTab = 'publicidad'; // Tab por defecto: Publicidad
     this.charts = {}; // Almacén de instancias de Chart.js
     this.currentPageRows = []; // Almacén de registros de la página activa
-    
+
     // Callbacks del controlador
     this.filterChangeCallback = null;
     this.exportExcelCallback = null;
-    
+
     // Paleta de Colores Oficial Banco de Bogotá
     this.colors = {
       blue: '#14327D',
@@ -24,6 +24,15 @@ class IndicatorsView {
       red: '#CD3232',
       grey: '#94A3B8'
     };
+  }
+
+  // Normalizar tipología para gráficas de publicidad:
+  // TIPO I → PRINCIPAL, TIPO II → INTERMEDIA, resto → LEJANA
+  normalizeTipologia(raw) {
+    const val = (raw || '').toString().trim().toUpperCase();
+    if (val === 'TIPO II') return 'INTERMEDIA';
+    if (val === 'TIPO I') return 'PRINCIPAL';
+    return 'LEJANA';
   }
 
   bindFilterChange(callback) { this.filterChangeCallback = callback; }
@@ -201,7 +210,7 @@ class IndicatorsView {
 
     this.populateFilters(data);
     this.setupEvents();
-    
+
     // Renderizar sub-pestaña activa por defecto
     this.renderActiveSubTab();
   }
@@ -222,10 +231,10 @@ class IndicatorsView {
       if (!Array.isArray(rows)) return;
       rows.forEach(r => {
         if (r['DEPARTAMENTO']) deptos.add(r['DEPARTAMENTO'].toString().trim());
-        
+
         let zonaVal = r['ZONA LINEACOM'] || r['COORDINADOR ENCARGADO'];
         if (zonaVal) zonas.add(zonaVal.toString().trim());
-        
+
         const tec = r['TECNICO'] || r['INGENIERO DE CAMPO'] || r['TÉCNICO'];
         if (tec) tecnicos.add(tec.toString().trim());
 
@@ -251,13 +260,13 @@ class IndicatorsView {
     // Inicializar los Excel multi-select dropdowns
     this.buildExcelDropdown('ddDepto', deptos, 'depto');
     this.buildExcelDropdown('ddZona', zonas, 'zona');
-    
+
     const estados = new Set(['ABIERTO', 'CERRADO']);
     this.buildExcelDropdown('ddEstado', estados, 'estado');
-    
+
     const slas = new Set(['SI', 'NO']);
     this.buildExcelDropdown('ddSLA', slas, 'sla');
-    
+
     this.buildExcelDropdown('ddTecnico', tecnicos, 'tecnico');
     this.buildExcelDropdown('ddTipologia', tipologias, 'tipologia');
     this.buildExcelDropdown('ddFormaAtencion', formasAtencion, 'formaAtencion');
@@ -287,7 +296,7 @@ class IndicatorsView {
     // Limpiar manejadores previos clonando elementos si es necesario o limpiando listeners
     const newBtn = btn.cloneNode(true);
     btn.parentNode.replaceChild(newBtn, btn);
-    
+
     const newBtnAll = btnAll.cloneNode(true);
     btnAll.parentNode.replaceChild(newBtnAll, btnAll);
 
@@ -315,31 +324,31 @@ class IndicatorsView {
 
     // Cargar opciones
     const sortedValues = Array.from(values).sort();
-    
+
     const renderList = (filterQuery = '') => {
       listContainer.innerHTML = '';
       const q = filterQuery.toLowerCase().trim();
-      
+
       sortedValues.forEach(val => {
         if (q && !val.toLowerCase().includes(q)) return;
-        
+
         const label = document.createElement('label');
         label.className = 'excel-dropdown-item';
-        
+
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.value = val;
-        
+
         // Si el filtro en el modelo incluye este valor, o está vacío (todos seleccionados)
-        const isChecked = this.model.filters[modelField].includes(val.toUpperCase()) || 
-                          this.model.filters[modelField].length === 0;
-        
+        const isChecked = this.model.filters[modelField].includes(val.toUpperCase()) ||
+          this.model.filters[modelField].length === 0;
+
         checkbox.checked = isChecked;
-        
+
         checkbox.addEventListener('change', () => {
           this.updateFilterFromCheckboxes(dropdown, modelField);
         });
-        
+
         label.appendChild(checkbox);
         label.appendChild(document.createTextNode(' ' + val));
         listContainer.appendChild(label);
@@ -375,13 +384,13 @@ class IndicatorsView {
     const listContainer = dropdown.querySelector('.excel-dropdown-list');
     const checkedCheckboxes = listContainer.querySelectorAll('input[type="checkbox"]:checked');
     const allCheckboxes = listContainer.querySelectorAll('input[type="checkbox"]');
-    
+
     if (checkedCheckboxes.length === allCheckboxes.length) {
       this.model.filters[modelField] = [];
     } else {
       this.model.filters[modelField] = Array.from(checkedCheckboxes).map(cb => cb.value.toUpperCase());
     }
-    
+
     this.updateDropdownButtonLabel(dropdown, modelField, allCheckboxes.length);
   }
 
@@ -389,7 +398,7 @@ class IndicatorsView {
   updateDropdownButtonLabel(dropdown, modelField, totalItemsCount) {
     const btn = dropdown.querySelector('.excel-dropdown-btn');
     const selected = this.model.filters[modelField];
-    
+
     if (selected.length === 0) {
       btn.textContent = 'Todos';
       btn.classList.remove('has-filter');
@@ -415,7 +424,7 @@ class IndicatorsView {
         buttons.forEach(b => b.classList.remove('active'));
         const target = e.currentTarget;
         target.classList.add('active');
-        
+
         this.activeSubTab = target.getAttribute('data-subtab');
         this.renderActiveSubTab();
       });
@@ -427,7 +436,7 @@ class IndicatorsView {
       this.model.filters.punto = document.getElementById('txtPunto')?.value || '';
       this.model.filters.ta = document.getElementById('txtTA')?.value || '';
       this.model.filters.fo = document.getElementById('txtFO')?.value || '';
-      
+
       if (this.filterChangeCallback) this.filterChangeCallback();
     });
 
@@ -445,18 +454,18 @@ class IndicatorsView {
         ta: '',
         fo: ''
       };
-      
+
       // Resetear inputs de texto
       const txtPunto = document.getElementById('txtPunto'); if (txtPunto) txtPunto.value = '';
       const txtTA = document.getElementById('txtTA'); if (txtTA) txtTA.value = '';
       const txtFO = document.getElementById('txtFO'); if (txtFO) txtFO.value = '';
-      
+
       // Volver a poblar filtros
       const rawData = this.model.rawIndicators;
       if (rawData) {
         this.populateFilters(rawData);
       }
-      
+
       if (this.filterChangeCallback) this.filterChangeCallback();
     });
   }
@@ -680,7 +689,7 @@ class IndicatorsView {
   getRecordVisitStatus(r) {
     let status = r['ESTADO DE LA VISITA'] || r['ESTADO'] || '';
     status = status.toString().trim().toUpperCase();
-    
+
     if (!status && Array.isArray(r.FORMS)) {
       for (const f of r.FORMS) {
         const resps = f.RESPUESTAS || {};
@@ -695,9 +704,9 @@ class IndicatorsView {
         if (status) break;
       }
     }
-    
+
     if (!status) return 'SIN REGISTRO';
-    
+
     if (status.includes('NO_EXITOSO') || status.includes('NO EXITOSA') || status.includes('ILOCALIZADO') || status.includes('FALLIDA')) {
       return 'NO EXITOSA';
     }
@@ -710,7 +719,7 @@ class IndicatorsView {
     if (status.includes('TELEFONICA') || status.includes('TELEFÓNICA')) {
       return 'GESTIÓN TELEFÓNICA';
     }
-    
+
     return status;
   }
 
@@ -728,12 +737,12 @@ class IndicatorsView {
     const pctSla = total ? ((cumpleSlaCount / total) * 100).toFixed(1) + '%' : '100.0%';
 
     // Calcular SLA Ajustado (excluyendo retrasos atribuibles a la ENTIDAD u otros externos)
-    const fallasLinea = rows.filter(r => 
+    const fallasLinea = rows.filter(r =>
       (r[slaField] || '').toString().toUpperCase().trim() === 'NO' &&
       this.model.isSameResp('LINEACOM', r[respField])
     ).length;
 
-    const fallasEntidad = rows.filter(r => 
+    const fallasEntidad = rows.filter(r =>
       (r[slaField] || '').toString().toUpperCase().trim() === 'NO' &&
       this.model.isSameResp('ENTIDAD', r[respField])
     ).length;
@@ -767,7 +776,7 @@ class IndicatorsView {
     let puntoKpiHtml = '';
     if (this.activeSubTab === 'publicidad' && (this.model.filters.punto || '').trim() !== '') {
       const puntoFilterVal = this.model.filters.punto.trim();
-      
+
       puntoKpiHtml = `
         <div class="point-advertising-kpi-card fade-in" style="background: linear-gradient(135deg, rgba(0, 26, 58, 0.8) 0%, rgba(20, 50, 125, 0.45) 100%); border: 1.5px solid var(--bdb-gold); border-radius: 16px; padding: 22px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); margin-bottom: 16px; position: relative; overflow: hidden;">
           <div style="position: absolute; top: -20px; right: -20px; font-size: 120px; opacity: 0.03; pointer-events: none; transform: rotate(-15deg);">📍</div>
@@ -789,7 +798,7 @@ class IndicatorsView {
           
           <div style="display: flex; flex-direction: column; gap: 16px;">
       `;
-      
+
       rows.forEach((r, idx) => {
         const taCode = r['CODIGO_TAREA'] || r['NRO PEDIDO / ORDEN DE COMPRA'] || '—';
         const fecha = r['FECHA LISTA'] || r['FECHA DE FIN'] || '—';
@@ -797,7 +806,7 @@ class IndicatorsView {
         const estab = r['ESTABLECIMIENTO'] || '—';
         const tecnico = r['TECNICO'] || r['INGENIERO DE CAMPO'] || r['TÉCNICO'] || '—';
         const depto = r['DEPARTAMENTO'] || '—';
-        
+
         puntoKpiHtml += `
           <div style="background: rgba(255, 255, 255, 0.02); border: 1.5px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 16px; transition: border-color var(--transition-fast);" onmouseover="this.style.borderColor='var(--bdb-gold-glow)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.05)'">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; border-bottom: 1.5px solid rgba(255, 255, 255, 0.03); padding-bottom: 10px;">
@@ -815,7 +824,7 @@ class IndicatorsView {
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
         `;
-        
+
         const elementsList = [
           { label: 'Marquesina Exterior', install: 'SE_INSTALA_MARQUESINA', causal: 'CAUSAL_NO_INSTALA_MARQUESINA', icon: '🏪' },
           { label: 'Cartel Saliente', install: 'SE_INSTALA_CARTEL', causal: 'CAUSAL_NO_INSTALA_CARTEL', icon: '🪧' },
@@ -823,13 +832,13 @@ class IndicatorsView {
           { label: 'Sticker Muro', install: 'SE_INSTALA_STICKER_MURO', causal: 'CAUSAL_NO_INSTALA_STICKER_MURO', icon: '🟡' },
           { label: 'Hablador', install: 'SE_INSTALA_HABLADOR', causal: 'CAUSAL_NO_INSTALA_HABLADOR', icon: '📋' }
         ];
-        
+
         elementsList.forEach(el => {
           const installVal = (r[el.install] || '').trim().toUpperCase();
           const causalVal = (r[el.causal] || '').trim();
-          
+
           let statusBadge = '';
-          
+
           if (installVal === 'SI') {
             statusBadge = `
               <div style="background: rgba(0, 135, 110, 0.08); border: 1.5px solid rgba(0, 135, 110, 0.35); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; height: 100%; min-height: 72px; justify-content: space-between; box-shadow: 0 4px 10px rgba(0, 135, 110, 0.05);">
@@ -868,16 +877,16 @@ class IndicatorsView {
               </div>
             `;
           }
-          
+
           puntoKpiHtml += `<div>${statusBadge}</div>`;
         });
-        
+
         puntoKpiHtml += `
             </div>
           </div>
         `;
       });
-      
+
       puntoKpiHtml += `
           </div>
         </div>
@@ -938,8 +947,8 @@ class IndicatorsView {
     });
 
     document.getElementById('kpiAjustadoCard')?.addEventListener('click', () => {
-      const records = rows.filter(r => 
-        (r[slaField] || '').toString().toUpperCase() === 'SI' || 
+      const records = rows.filter(r =>
+        (r[slaField] || '').toString().toUpperCase() === 'SI' ||
         !this.model.isSameResp('LINEACOM', r[respField])
       );
       this.openKpiModal('Actividades que Cumplen SLA Ajustado', records);
@@ -960,7 +969,7 @@ class IndicatorsView {
   renderCharts(rows, slaField) {
     if (this.activeSubTab === 'implementacion' || this.activeSubTab === 'desinstalacion') {
       // ════ TAB DE IMPLEMENTACIÓN O DESINSTALACIÓN: TENDENCIA, SLA Y DEPTOS ════
-      
+
       // 1. Gráfico de Línea - Tendencia Mensual
       const canvasTrend = document.getElementById('chartTrend');
       if (canvasTrend) {
@@ -1082,7 +1091,7 @@ class IndicatorsView {
           }
         });
       }
-      
+
     } else if (this.activeSubTab === 'publicidad') {
       // ════ TAB DE PUBLICIDAD: ELEMENTOS INSTALADOS, NO-INSTALACION, TIPOLOGIA, ESTADO VISITA ════
 
@@ -1092,7 +1101,7 @@ class IndicatorsView {
       let stickerVidrioCount = 0;
       let stickerMuroCount = 0;
       let habladorCount = 0;
-      
+
       const causalesNoInstala = {};
       const tipologiaCounts = {};
       const estadoVisitaCounts = {};
@@ -1121,8 +1130,8 @@ class IndicatorsView {
         checkNoCausal('SE_INSTALA_STICKER_MURO', 'CAUSAL_NO_INSTALA_STICKER_MURO');
         checkNoCausal('SE_INSTALA_HABLADOR', 'CAUSAL_NO_INSTALA_HABLADOR');
 
-        // Tipología
-        const tipo = (r['TIPOLOGIA'] || 'SIN TIPOLOGÍA').trim().toUpperCase();
+        // Tipología (normalizada: PRINCIPAL / INTERMEDIA / LEJANA)
+        const tipo = this.normalizeTipologia(r['TIPOLOGIA']);
         tipologiaCounts[tipo] = (tipologiaCounts[tipo] || 0) + 1;
 
         // Estado de Visita
@@ -1157,12 +1166,12 @@ class IndicatorsView {
               legend: { display: false }
             },
             scales: {
-              x: { 
-                ticks: { 
+              x: {
+                ticks: {
                   color: '#94a3b8',
                   font: { size: 10, weight: '500' }
-                }, 
-                grid: { display: false } 
+                },
+                grid: { display: false }
               },
               y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } }
             }
@@ -1173,7 +1182,7 @@ class IndicatorsView {
       // 2. Gráfico Causal No Instalación
       const canvasNoInst = document.getElementById('chartCausalNoInstalacion');
       if (canvasNoInst) {
-        const sortedNoInst = Object.entries(causalesNoInstala).sort((a,b) => b[1] - a[1]).slice(0, 6);
+        const sortedNoInst = Object.entries(causalesNoInstala).sort((a, b) => b[1] - a[1]).slice(0, 6);
         this.charts.causalNoInst = new Chart(canvasNoInst, {
           type: 'bar',
           data: {
@@ -1203,19 +1212,19 @@ class IndicatorsView {
             },
             scales: {
               x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-              y: { 
-                ticks: { 
+              y: {
+                ticks: {
                   color: '#FAFAFA',
                   font: { size: 10.5 },
-                  callback: function(value) {
+                  callback: function (value) {
                     const label = this.getLabelForValue(value);
                     if (label && label.length > 35) {
                       return label.substring(0, 35) + '...';
                     }
                     return label;
                   }
-                }, 
-                grid: { display: false } 
+                },
+                grid: { display: false }
               }
             }
           }
@@ -1225,14 +1234,19 @@ class IndicatorsView {
       // 3. Gráfico de Tipología
       const canvasTipo = document.getElementById('chartTipologia');
       if (canvasTipo) {
-        const entries = Object.entries(tipologiaCounts).filter(e => e[0] !== '' && e[0] !== 'SIN TIPOLOGÍA');
+        // Orden fijo para las 3 categorías normalizadas
+        const tipoOrder = ['PRINCIPAL', 'INTERMEDIA', 'LEJANA'];
+        const tipoColors = [this.colors.blue, this.colors.gold, this.colors.green];
+        const entries = tipoOrder
+          .filter(t => tipologiaCounts[t])
+          .map(t => [t, tipologiaCounts[t]]);
         this.charts.tipologia = new Chart(canvasTipo, {
           type: 'doughnut',
           data: {
             labels: entries.map(e => e[0]),
             datasets: [{
               data: entries.map(e => e[1]),
-              backgroundColor: [this.colors.blue, this.colors.gold, this.colors.green, this.colors.pink, this.colors.yellow, this.colors.grey],
+              backgroundColor: entries.map((_, i) => tipoColors[tipoOrder.indexOf(entries[i][0])]),
               borderColor: 'rgba(0, 26, 58, 0.8)',
               borderWidth: 2
             }]
@@ -1305,8 +1319,7 @@ class IndicatorsView {
       if (canvasElTipo) {
         const tipologias = {};
         rows.forEach(r => {
-          const tipo = (r['TIPOLOGIA'] || 'SIN TIPOLOGÍA').trim().toUpperCase();
-          if (tipo === 'SIN TIPOLOGÍA' || tipo === '') return;
+          const tipo = this.normalizeTipologia(r['TIPOLOGIA']);
           if (!tipologias[tipo]) tipologias[tipo] = { marq: 0, cart: 0, stV: 0, stM: 0, habl: 0 };
           if ((r['SE_INSTALA_MARQUESINA'] || '').trim().toUpperCase() === 'SI') tipologias[tipo].marq++;
           if ((r['SE_INSTALA_CARTEL'] || '').trim().toUpperCase() === 'SI') tipologias[tipo].cart++;
@@ -1343,7 +1356,7 @@ class IndicatorsView {
 
     } else if (this.activeSubTab === 'capacitacion') {
       // ════ TAB DE CAPACITACIÓN: FACTURABLES VS GARANTÍAS, TIPOLOGÍA, ESTADOS ════
-      
+
       let facturables = 0;
       let garantias = 0;
       const tipologiaCounts = {};
@@ -1443,11 +1456,11 @@ class IndicatorsView {
         Object.entries(estadoCapacitacion).forEach(([k, v]) => {
           chartData[`Estado: ${k}`] = v;
         });
-        Object.entries(causalCapacitacion).sort((a,b) => b[1]-a[1]).slice(0, 5).forEach(([k, v]) => {
+        Object.entries(causalCapacitacion).sort((a, b) => b[1] - a[1]).slice(0, 5).forEach(([k, v]) => {
           chartData[`Causal: ${k}`] = v;
         });
 
-        const sortedEntries = Object.entries(chartData).sort((a,b) => b[1]-a[1]).slice(0, 10);
+        const sortedEntries = Object.entries(chartData).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
         this.charts.estCap = new Chart(canvasEstCap, {
           type: 'bar',
@@ -1476,19 +1489,19 @@ class IndicatorsView {
               }
             },
             scales: {
-              x: { 
-                ticks: { 
-                  color: '#94a3b8', 
+              x: {
+                ticks: {
+                  color: '#94a3b8',
                   font: { size: 9 },
-                  callback: function(value) {
+                  callback: function (value) {
                     const label = this.getLabelForValue(value);
                     if (label && label.length > 20) {
                       return label.substring(0, 20) + '...';
                     }
                     return label;
                   }
-                }, 
-                grid: { display: false } 
+                },
+                grid: { display: false }
               },
               y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } }
             }
@@ -1572,7 +1585,7 @@ class IndicatorsView {
     const startIdx = (currentPage - 1) * this.model.pageSize;
     const endIdx = Math.min(startIdx + this.model.pageSize, rows.length);
     const pageRows = rows.slice(startIdx, endIdx);
-    
+
     // Almacenar registros de la página activa para usarlos al hacer clic
     this.currentPageRows = pageRows;
 
@@ -1591,7 +1604,7 @@ class IndicatorsView {
       tableHtml += '<tr class="clickable-row">';
       cols.forEach(c => {
         let valHtml = '';
-        
+
         if (c.key === '_is_abierto') {
           const isAb = !!r._is_abierto;
           valHtml = isAb
@@ -1621,7 +1634,7 @@ class IndicatorsView {
           }
           valHtml = this.model.formatCellValue(c.key, rawVal);
         }
-        
+
         tableHtml += `<td>${valHtml}</td>`;
       });
       tableHtml += '</tr>';
@@ -1703,7 +1716,7 @@ class IndicatorsView {
       searchInput.addEventListener('input', (e) => {
         this.model.searchTerms[this.activeSubTab] = e.target.value;
         this.model.pages[this.activeSubTab] = 1; // Resetear página a 1
-        
+
         // Re-filtrar e imprimir
         const data = this.model.rawIndicators;
         let list = [];
@@ -1811,14 +1824,14 @@ class IndicatorsView {
       recordsList.forEach(r => {
         const tr = document.createElement('tr');
         const isAb = !!r._is_abierto;
-        const stateBadge = isAb 
-          ? `<span class="badge badge-open">Abierto</span>` 
+        const stateBadge = isAb
+          ? `<span class="badge badge-open">Abierto</span>`
           : `<span class="badge badge-closed">Cerrado</span>`;
-        
+
         const slaField = this.activeSubTab === 'desinstalacion' ? 'DENTRO DE LOS SLA' : 'CUMPLE SLA';
         const slaVal = (r[slaField] || '').toString().toUpperCase().trim();
-        const slaBadge = slaVal === 'SI' 
-          ? `<span class="badge badge-sla-ok">Cumple</span>` 
+        const slaBadge = slaVal === 'SI'
+          ? `<span class="badge badge-sla-ok">Cumple</span>`
           : (slaVal === 'NO' ? `<span class="badge badge-sla-fail">Vencido</span>` : `<span class="badge badge-sla-na">N/A</span>`);
 
         const taCode = r['CODIGO_TAREA'] || r['NRO PEDIDO / ORDEN DE COMPRA'] || '—';
@@ -1846,11 +1859,13 @@ class IndicatorsView {
       this.closeModal('customKpiModal');
     });
 
+
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) this.closeModal('customKpiModal');
     });
   }
 
+  // Abre el Wizard detallado de una tarea en específico (TA + FO)
   // Abre el Wizard detallado de una tarea en específico (TA + FO)
   openTaskWizard(record) {
     this.closeModal('customWizardModal');
@@ -2121,6 +2136,8 @@ class IndicatorsView {
   }
 
   // Renderiza todas las respuestas unificadas
+
+  // 
   renderAllFormResponses(forms, container) {
     let html = `
       <div class="responses-list-container fade-in">
@@ -2168,4 +2185,6 @@ class IndicatorsView {
 }
 
 // Exponer la clase a nivel global
+
+// 
 window.IndicatorsView = IndicatorsView;

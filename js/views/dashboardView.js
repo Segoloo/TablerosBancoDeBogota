@@ -157,6 +157,18 @@ class DashboardView {
         container.appendChild(p);
       }
     }
+
+    // Efecto de glow interactivo con seguimiento del mouse en hub-cards
+    this.container.addEventListener('mousemove', (e) => {
+      const card = e.target.closest('.hub-card');
+      if (card) {
+        const rect = card.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        card.style.setProperty('--card-glow-x', `${x}%`);
+        card.style.setProperty('--card-glow-y', `${y}%`);
+      }
+    });
   }
 
   setupEvents() {
