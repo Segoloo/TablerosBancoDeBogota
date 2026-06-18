@@ -566,6 +566,14 @@ class IndicatorsView {
             </div>
           </div>
 
+          <!-- Distribución por Zona Lineacom -->
+          <div class="chart-card">
+            <div class="chart-title">Distribución por Zona Lineacom</div>
+            <div class="chart-container-wrapper">
+              <canvas id="chartZonaPublicidad"></canvas>
+            </div>
+          </div>
+
           <!-- Causales de No Instalación -->
           <div class="chart-card wide-chart">
             <div class="chart-title">Causales de No Instalación</div>
@@ -1088,6 +1096,7 @@ class IndicatorsView {
       const causalesNoInstala = {};
       const tipologiaCounts = {};
       const estadoVisitaCounts = {};
+      const zonaCounts = {};
 
       rows.forEach(r => {
         // Elementos instalados
@@ -1119,6 +1128,10 @@ class IndicatorsView {
         // Estado de Visita
         const estado = this.getRecordVisitStatus(r);
         estadoVisitaCounts[estado] = (estadoVisitaCounts[estado] || 0) + 1;
+
+        // Zona Lineacom
+        const zonaVal = (r['ZONA LINEACOM'] || r['COORDINADOR ENCARGADO'] || 'SIN ZONA').trim().toUpperCase();
+        zonaCounts[zonaVal] = (zonaCounts[zonaVal] || 0) + 1;
       });
 
       // 1. Gráfico Kit Publicidad (Elementos Instalados)
@@ -1246,6 +1259,32 @@ class IndicatorsView {
             datasets: [{
               data: entries.map(e => e[1]),
               backgroundColor: [this.colors.green, this.colors.red, this.colors.yellow, this.colors.blue, this.colors.grey],
+              borderColor: 'rgba(0, 26, 58, 0.8)',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'right', labels: { color: '#CBD5E1', font: { size: 10 } } }
+            },
+            cutout: '55%'
+          }
+        });
+      }
+
+      // 4b. Gráfico Zona Lineacom
+      const canvasZona = document.getElementById('chartZonaPublicidad');
+      if (canvasZona) {
+        const entries = Object.entries(zonaCounts).sort((a, b) => b[1] - a[1]);
+        this.charts.zonaPub = new Chart(canvasZona, {
+          type: 'doughnut',
+          data: {
+            labels: entries.map(e => e[0]),
+            datasets: [{
+              data: entries.map(e => e[1]),
+              backgroundColor: [this.colors.blue, this.colors.gold, this.colors.green, this.colors.pink, this.colors.yellow, this.colors.grey],
               borderColor: 'rgba(0, 26, 58, 0.8)',
               borderWidth: 2
             }]
