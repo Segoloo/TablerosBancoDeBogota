@@ -35,6 +35,115 @@ class IndicatorsView {
     return 'LEJANA';
   }
 
+  // Obtener el tipo de solicitud de forma segura con fallback a la descripción
+  getRequestType(r) {
+    if (r['TIPO_SOLICITUD']) return r['TIPO_SOLICITUD'];
+
+    // Fallback: intentar extraer de la descripción si está presente
+    const desc = r['DESCRIPCION'] || r['Descripción'] || r['Descripci\xf3n'] || r['Descripcin'] || '';
+    if (desc) {
+      const match = desc.match(/TIPO\s+DE\s+SOLICITUD\s*[:\.]\s*([^/\n\r]+)/i);
+      if (match) {
+        return match[1].trim();
+      }
+    }
+    return '';
+  }
+
+  // Clasificar si pertenece a publicidad, capacitación, ambos o ninguno
+  classifyRecord(r) {
+    const requestType = this.getRequestType(r).toUpperCase().trim();
+    if (!requestType) return 'ambos';
+
+    // Normalización: quitar tildes/acentos
+    const normalized = requestType
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^A-Z0-9\s\-]/g, "")
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (normalized.includes('CRECIMIENTO') || normalized.includes('CAPACITACION Y SENALIZACION')) {
+      return 'ambos';
+    }
+    if (normalized.includes('PUBLICIDAD')) {
+      return 'publicidad';
+    }
+    if (normalized.includes('CAPACITACION')) {
+      return 'capacitacion';
+    }
+    return 'ambos'; // fallback
+  }
+
+  // Parsear la descripción en un mapa llave-valor
+  parseDescriptionFields(desc) {
+    const fields = {};
+    if (!desc) return fields;
+
+    // Normalizar saltos de línea y separar por slash /
+    const normalized = desc.replace(/\r?\n/g, ' / ');
+    const parts = normalized.split(' / ');
+
+    parts.forEach(part => {
+      // Buscar el patrón LLAVE : VALOR o LLAVE . VALOR
+      const match = part.match(/^([^:\.]+)(?:[:\.])(.*)$/);
+      if (match) {
+        const key = match[1].trim().toUpperCase();
+        const val = match[2].trim();
+        if (val) {
+          fields[key] = val;
+        }
+      }
+    });
+
+    return fields;
+  }
+
+  // Extraer los campos más importantes de la descripción
+  getImportantDescFields(r) {
+    const desc = r['DESCRIPCION'] || r['Descripción'] || r['Descripci\xf3n'] || r['Descripcin'] || '';
+    if (!desc) return null;
+
+    const fields = this.parseDescriptionFields(desc);
+
+    // Extraer campos específicos
+    const contacto = fields['CONTACTO'] || '';
+    const celular = fields['CELULAR'] || '';
+    let telefono = fields['TELEFONO DE CONTACTO'] || fields['TELEFONO'] || '';
+    if (celular && celular !== '—') {
+      telefono = telefono ? `${telefono} / ${celular}` : celular;
+    }
+    const email = fields['EMAIL'] || '';
+    const horario = fields['HORARIO'] || '';
+
+    // Tarjeta de sembrado (búsqueda flexible)
+    let tarjeta = '';
+    for (let k in fields) {
+      if (k.includes('TARJETA') || k.includes('SEMBRADO')) {
+        tarjeta = fields[k];
+        break;
+      }
+    }
+
+    // POS (búsqueda flexible)
+    let requierePos = '';
+    for (let k in fields) {
+      if (k.includes('REQUIERE POS') || k.includes('POS')) {
+        requierePos = fields[k];
+        break;
+      }
+    }
+
+    return {
+      contacto,
+      telefono,
+      email,
+      horario,
+      tarjeta,
+      requierePos
+    };
+  }
+
   bindFilterChange(callback) { this.filterChangeCallback = callback; }
   bindExportExcel(callback) { this.exportExcelCallback = callback; }
 
@@ -126,7 +235,7 @@ class IndicatorsView {
               </div>
             </div>
             <div class="filter-group">
-              <label>Técnico / Ingeniero</label>
+              <label>Técnico de Campo</label>
               <div class="excel-dropdown" id="ddTecnico" data-filter="tecnico">
                 <button class="excel-dropdown-btn">Todos</button>
                 <div class="excel-dropdown-content hidden">
@@ -507,7 +616,15 @@ class IndicatorsView {
       rawList = (data.implementacion?.bd || []).concat(data.implementacion?.abiertos || []);
       rawList = rawList.filter(r => {
         const t = (r['TIPO DE SERVICIO'] || '').toString().trim().toUpperCase();
-        return t === 'FORMATO CAPACITACION Y PUBLICIDAD BANCO DE BOGOTA';
+        if (t !== 'FORMATO CAPACITACION Y PUBLICIDAD BANCO DE BOGOTA') return false;
+
+        const cat = this.classifyRecord(r);
+        if (this.activeSubTab === 'publicidad') {
+          return cat === 'publicidad' || cat === 'ambos';
+        } else if (this.activeSubTab === 'capacitacion') {
+          return cat === 'capacitacion' || cat === 'ambos';
+        }
+        return true;
       });
     }
 
@@ -567,6 +684,14 @@ class IndicatorsView {
             </div>
           </div>
 
+          <!-- Comparativa Publicidad y Capacitación -->
+          <div class="chart-card">
+            <div class="chart-title">Comparativa: Tipo de Solicitud</div>
+            <div class="chart-container-wrapper">
+              <canvas id="chartComparativoPublicidad"></canvas>
+            </div>
+          </div>
+
           <!-- Estado de Visita -->
           <div class="chart-card">
             <div class="chart-title">Estado de las Visitas</div>
@@ -580,6 +705,38 @@ class IndicatorsView {
             <div class="chart-title">Distribución por Zona Lineacom</div>
             <div class="chart-container-wrapper">
               <canvas id="chartZonaPublicidad"></canvas>
+            </div>
+          </div>
+
+          <!-- Top 5 Técnicos -->
+          <div class="chart-card">
+            <div class="chart-title">Top 5 Técnicos</div>
+            <div class="chart-container-wrapper">
+              <canvas id="chartTopTecnicosPublicidad"></canvas>
+            </div>
+          </div>
+
+          <!-- Cumplimiento SLA -->
+          <div class="chart-card">
+            <div class="chart-title">Cumplimiento SLA</div>
+            <div class="chart-container-wrapper">
+              <canvas id="chartSLAPublicidad"></canvas>
+            </div>
+          </div>
+
+          <!-- Tendencia Mensual -->
+          <div class="chart-card">
+            <div class="chart-title">Tendencia Mensual</div>
+            <div class="chart-container-wrapper">
+              <canvas id="chartTendenciaPublicidad"></canvas>
+            </div>
+          </div>
+
+          <!-- Detalle de Solicitudes (Nombres Reales) -->
+          <div class="chart-card wide-chart">
+            <div class="chart-title">Detalle de Solicitudes (Nombres Reales)</div>
+            <div class="chart-container-wrapper" style="height: 250px;">
+              <canvas id="chartTiposSolicitudPublicidad"></canvas>
             </div>
           </div>
 
@@ -616,6 +773,22 @@ class IndicatorsView {
             <div class="chart-title">Distribución por Tipología</div>
             <div class="chart-container-wrapper">
               <canvas id="chartTipologiaCapacitacion"></canvas>
+            </div>
+          </div>
+
+          <!-- Comparativa Publicidad y Capacitación -->
+          <div class="chart-card">
+            <div class="chart-title">Comparativa: Tipo de Solicitud</div>
+            <div class="chart-container-wrapper">
+              <canvas id="chartComparativoCapacitacion"></canvas>
+            </div>
+          </div>
+
+          <!-- Detalle de Solicitudes (Nombres Reales) -->
+          <div class="chart-card wide-chart">
+            <div class="chart-title">Detalle de Solicitudes (Nombres Reales)</div>
+            <div class="chart-container-wrapper" style="height: 250px;">
+              <canvas id="chartTiposSolicitudCapacitacion"></canvas>
             </div>
           </div>
 
@@ -734,22 +907,27 @@ class IndicatorsView {
     const cerrados = total - abiertos;
 
     // Calcular SLA General
-    const cumpleSlaCount = rows.filter(r => (r[slaField] || '').toString().toUpperCase() === 'SI').length;
-    const pctSla = total ? ((cumpleSlaCount / total) * 100).toFixed(1) + '%' : '100.0%';
+    const validSlaRows = rows.filter(r => {
+      const v = (r[slaField] || '').toString().toUpperCase().trim();
+      return v === 'SI' || v === 'NO';
+    });
+    const totalSla = validSlaRows.length;
+    const cumpleSlaCount = validSlaRows.filter(r => (r[slaField] || '').toString().toUpperCase().trim() === 'SI').length;
+    const pctSla = totalSla ? ((cumpleSlaCount / totalSla) * 100).toFixed(1) + '%' : '100.0%';
 
-    // Calcular SLA Ajustado (excluyendo retrasos atribuibles a la ENTIDAD u otros externos)
-    const fallasLinea = rows.filter(r =>
+    // Calcular SLA Ajustado (excluyendo retrasos atribuibles a otros externos)
+    const fallasLinea = validSlaRows.filter(r =>
       (r[slaField] || '').toString().toUpperCase().trim() === 'NO' &&
       this.model.isSameResp('LINEACOM', r[respField])
     ).length;
 
-    const fallasEntidad = rows.filter(r =>
+    const fallasOtras = validSlaRows.filter(r =>
       (r[slaField] || '').toString().toUpperCase().trim() === 'NO' &&
-      this.model.isSameResp('ENTIDAD', r[respField])
+      !this.model.isSameResp('LINEACOM', r[respField])
     ).length;
 
-    const cumpleAjustado = total - fallasLinea;
-    const pctAjustado = total ? ((cumpleAjustado / total) * 100).toFixed(1) + '%' : '100.0%';
+    const cumpleAjustado = totalSla - fallasLinea;
+    const pctAjustado = totalSla ? ((cumpleAjustado / totalSla) * 100).toFixed(1) + '%' : '100.0%';
 
     // KPI extra para Capacitación: % Garantías
     let garantiasKpiHtml = '';
@@ -915,7 +1093,7 @@ class IndicatorsView {
         <div class="kpi-icon-db">⏱️</div>
         <div class="kpi-val-db" style="color: var(--bdb-green-prem);">${pctSla}</div>
         <div class="kpi-lbl-db">Cumplimiento SLA</div>
-        <div class="kpi-sub-db">${cumpleSlaCount.toLocaleString('es-CO')} de ${total.toLocaleString('es-CO')} en plazo</div>
+        <div class="kpi-sub-db">${cumpleSlaCount.toLocaleString('es-CO')} de ${totalSla.toLocaleString('es-CO')} evaluadas</div>
       </div>
 
       <!-- Cumplimiento Ajustado -->
@@ -929,9 +1107,9 @@ class IndicatorsView {
       <!-- Responsabilidad de fallas -->
       <div class="kpi-card-dashboard clickable-kpi" id="kpiFallasCard" title="Ver fallas y retrasos registrados">
         <div class="kpi-icon-db">⚠</div>
-        <div class="kpi-val-db" style="color: var(--bdb-red-sym);">${(fallasLinea + fallasEntidad).toLocaleString('es-CO')}</div>
+        <div class="kpi-val-db" style="color: var(--bdb-red-sym);">${(fallasLinea + fallasOtras).toLocaleString('es-CO')}</div>
         <div class="kpi-lbl-db">Fallas Registradas</div>
-        <div class="kpi-sub-db" style="font-size: 10px;">Línea: ${fallasLinea.toLocaleString('es-CO')} · Entidad: ${fallasEntidad.toLocaleString('es-CO')}</div>
+        <div class="kpi-sub-db" style="font-size: 10px;">Línea: ${fallasLinea.toLocaleString('es-CO')} · Otras: ${fallasOtras.toLocaleString('es-CO')}</div>
       </div>
 
       <!-- Actividades Abiertas -->
@@ -952,20 +1130,20 @@ class IndicatorsView {
     });
 
     document.getElementById('kpiSlaCard')?.addEventListener('click', () => {
-      const records = rows.filter(r => (r[slaField] || '').toString().toUpperCase() === 'SI');
+      const records = validSlaRows.filter(r => (r[slaField] || '').toString().toUpperCase().trim() === 'SI');
       this.openKpiModal('Actividades dentro de SLA', records);
     });
 
     document.getElementById('kpiAjustadoCard')?.addEventListener('click', () => {
-      const records = rows.filter(r =>
-        (r[slaField] || '').toString().toUpperCase() === 'SI' ||
+      const records = validSlaRows.filter(r =>
+        (r[slaField] || '').toString().toUpperCase().trim() === 'SI' ||
         !this.model.isSameResp('LINEACOM', r[respField])
       );
       this.openKpiModal('Actividades que Cumplen SLA Ajustado', records);
     });
 
     document.getElementById('kpiFallasCard')?.addEventListener('click', () => {
-      const records = rows.filter(r => (r[slaField] || '').toString().toUpperCase() === 'NO');
+      const records = validSlaRows.filter(r => (r[slaField] || '').toString().toUpperCase().trim() === 'NO');
       this.openKpiModal('Fallas y Retrasos Registrados', records);
     });
 
@@ -977,7 +1155,7 @@ class IndicatorsView {
     document.getElementById('kpiAbiertosCard')?.addEventListener('click', () => {
       const tabLabel = this.activeSubTab === 'capacitacion' ? 'Capacitación'
         : this.activeSubTab === 'publicidad' ? 'Publicidad'
-        : 'Desinstalación de Publicidad';
+          : 'Desinstalación de Publicidad';
       this.openKpiModal(`Actividades Abiertas — ${tabLabel}`, abiertoRows);
     });
   }
@@ -1391,6 +1569,215 @@ class IndicatorsView {
         });
       }
 
+      // 6. Gráfico Comparativo: Publicidad + Capacitación vs Solo Publicidad
+      const canvasCompPub = document.getElementById('chartComparativoPublicidad');
+      if (canvasCompPub) {
+        const ambosCount = rows.filter(r => this.classifyRecord(r) === 'ambos').length;
+        const soloCount = rows.filter(r => this.classifyRecord(r) === 'publicidad').length;
+        const total = ambosCount + soloCount;
+
+        this.charts.comparativoPub = new Chart(canvasCompPub, {
+          type: 'doughnut',
+          data: {
+            labels: ['Publicidad y Capacitación', 'Solo Publicidad'],
+            datasets: [{
+              data: [ambosCount, soloCount],
+              backgroundColor: [this.colors.blue, this.colors.gold],
+              borderColor: 'rgba(0, 26, 58, 0.8)',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'right', labels: { color: '#CBD5E1', font: { size: 10 } } },
+              tooltip: {
+                callbacks: {
+                  label: (context) => {
+                    const val = context.raw || 0;
+                    const pct = total ? ((val / total) * 100).toFixed(1) + '%' : '0%';
+                    return ` ${context.label}: ${val.toLocaleString('es-CO')} (${pct})`;
+                  }
+                }
+              }
+            },
+            cutout: '55%'
+          }
+        });
+      }
+
+      // 7. Gráfico Detalle de Solicitudes (Nombres Reales)
+      const canvasTiposPub = document.getElementById('chartTiposSolicitudPublicidad');
+      if (canvasTiposPub) {
+        const counts = {};
+        rows.forEach(r => {
+          const name = this.getRequestType(r) || 'SIN ESPECIFICAR';
+          counts[name] = (counts[name] || 0) + 1;
+        });
+
+        const sortedTypes = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+        this.charts.tiposSolicitudPub = new Chart(canvasTiposPub, {
+          type: 'bar',
+          data: {
+            labels: sortedTypes.map(x => x[0]),
+            datasets: [{
+              label: 'Registros',
+              data: sortedTypes.map(x => x[1]),
+              backgroundColor: 'rgba(214, 162, 24, 0.75)',
+              borderColor: this.colors.gold,
+              borderWidth: 1,
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+              y: { ticks: { color: '#FAFAFA', font: { size: 9.5 } }, grid: { display: false } }
+            }
+          }
+        });
+      }
+
+      // 8. Gráfico Top 5 Técnicos
+      const canvasTopTecnicos = document.getElementById('chartTopTecnicosPublicidad');
+      if (canvasTopTecnicos) {
+        const tecCounts = {};
+        rows.forEach(r => {
+          const tec = r['TECNICO'] || r['INGENIERO DE CAMPO'] || r['TÉCNICO'] || 'SIN ASIGNAR';
+          tecCounts[tec] = (tecCounts[tec] || 0) + 1;
+        });
+        const sortedTecs = Object.entries(tecCounts)
+          .filter(x => x[0] !== 'SIN ASIGNAR')
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5);
+        this.charts.topTecnicosPub = new Chart(canvasTopTecnicos, {
+          type: 'bar',
+          data: {
+            labels: sortedTecs.map(x => x[0]),
+            datasets: [{
+              label: 'Registros',
+              data: sortedTecs.map(x => x[1]),
+              backgroundColor: 'rgba(20, 50, 125, 0.75)',
+              borderColor: this.colors.blue,
+              borderWidth: 1,
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: '#94a3b8', font: { size: 9 }, maxRotation: 45, minRotation: 45 }, grid: { display: false } },
+              y: { ticks: { color: '#FAFAFA', font: { size: 9.5 }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.06)' } }
+            }
+          }
+        });
+      }
+
+      // 9. Gráfico Cumplimiento SLA
+      const canvasSLAPub = document.getElementById('chartSLAPublicidad');
+      if (canvasSLAPub) {
+        let slaSi = 0, slaNo = 0;
+        rows.forEach(r => {
+          const s = (r[slaField] || '').toString().trim().toUpperCase();
+          if (s === 'SI') slaSi++;
+          else if (s === 'NO') slaNo++;
+        });
+        const totalSla = slaSi + slaNo;
+        this.charts.slaPub = new Chart(canvasSLAPub, {
+          type: 'doughnut',
+          data: {
+            labels: ['Cumple', 'No Cumple'],
+            datasets: [{
+              data: [slaSi, slaNo],
+              backgroundColor: ['rgba(0, 135, 110, 0.85)', 'rgba(205, 50, 50, 0.85)'],
+              borderColor: 'rgba(0, 26, 58, 0.8)',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { color: '#CBD5E1', font: { size: 10 } } },
+              tooltip: {
+                callbacks: {
+                  label: (context) => {
+                    const val = context.raw || 0;
+                    const pct = totalSla ? ((val / totalSla) * 100).toFixed(1) + '%' : '0%';
+                    return ` ${context.label}: ${val} (${pct})`;
+                  }
+                }
+              }
+            },
+            cutout: '65%'
+          }
+        });
+      }
+
+      // 10. Gráfico Tendencia Mensual
+      const canvasTendenciaPub = document.getElementById('chartTendenciaPublicidad');
+      if (canvasTendenciaPub) {
+        const mesCounts = {};
+        rows.forEach(r => {
+          let fechaStr = r['FECHA LISTA'] || r['FECHA DE APERTURA (DD/MM/AAAA)'] || r['FECHA SOLICITUD'];
+          if (fechaStr) {
+            let fechaSolo = fechaStr.split(' ')[0]; // Remove time if present
+            let parts = fechaSolo.split('/');
+            if (parts.length === 3) {
+              const mesAnio = `${parts[1]}/${parts[2]}`;
+              mesCounts[mesAnio] = (mesCounts[mesAnio] || 0) + 1;
+            } else if (fechaSolo.includes('-')) {
+              parts = fechaSolo.split('-');
+              if (parts.length >= 2) {
+                const mesAnio = `${parts[1]}/${parts[0].length === 4 ? parts[0] : parts[2]}`;
+                mesCounts[mesAnio] = (mesCounts[mesAnio] || 0) + 1;
+              }
+            }
+          }
+        });
+        const sortedMeses = Object.keys(mesCounts).sort((a, b) => {
+          // Sort by YYYY/MM to ensure chronological order. Format is MM/YYYY
+          const [m1, y1] = a.split('/');
+          const [m2, y2] = b.split('/');
+          return new Date(y1, m1 - 1) - new Date(y2, m2 - 1);
+        });
+        this.charts.tendenciaPub = new Chart(canvasTendenciaPub, {
+          type: 'line',
+          data: {
+            labels: sortedMeses,
+            datasets: [{
+              label: 'Solicitudes',
+              data: sortedMeses.map(m => mesCounts[m]),
+              borderColor: this.colors.gold,
+              backgroundColor: 'rgba(214, 162, 24, 0.2)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.3,
+              pointBackgroundColor: this.colors.gold
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+              y: { ticks: { color: '#FAFAFA' }, grid: { color: 'rgba(255,255,255,0.06)' }, beginAtZero: true }
+            }
+          }
+        });
+      }
+
     } else if (this.activeSubTab === 'capacitacion') {
       // ════ TAB DE CAPACITACIÓN: FACTURABLES VS GARANTÍAS, TIPOLOGÍA, ESTADOS ════
 
@@ -1550,6 +1937,83 @@ class IndicatorsView {
           }
         });
       }
+
+      // 4. Gráfico Comparativo: Publicidad y Capacitación vs Solo Capacitación
+      const canvasCompCap = document.getElementById('chartComparativoCapacitacion');
+      if (canvasCompCap) {
+        const ambosCount = rows.filter(r => this.classifyRecord(r) === 'ambos').length;
+        const soloCount = rows.filter(r => this.classifyRecord(r) === 'capacitacion').length;
+        const total = ambosCount + soloCount;
+
+        this.charts.comparativoCap = new Chart(canvasCompCap, {
+          type: 'doughnut',
+          data: {
+            labels: ['Publicidad y Capacitación', 'Solo Capacitación'],
+            datasets: [{
+              data: [ambosCount, soloCount],
+              backgroundColor: [this.colors.blue, this.colors.yellow],
+              borderColor: 'rgba(0, 26, 58, 0.8)',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'right', labels: { color: '#CBD5E1', font: { size: 10 } } },
+              tooltip: {
+                callbacks: {
+                  label: (context) => {
+                    const val = context.raw || 0;
+                    const pct = total ? ((val / total) * 100).toFixed(1) + '%' : '0%';
+                    return ` ${context.label}: ${val.toLocaleString('es-CO')} (${pct})`;
+                  }
+                }
+              }
+            },
+            cutout: '55%'
+          }
+        });
+      }
+
+      // 5. Gráfico Detalle de Solicitudes (Nombres Reales)
+      const canvasTiposCap = document.getElementById('chartTiposSolicitudCapacitacion');
+      if (canvasTiposCap) {
+        const counts = {};
+        rows.forEach(r => {
+          const name = this.getRequestType(r) || 'SIN ESPECIFICAR';
+          counts[name] = (counts[name] || 0) + 1;
+        });
+
+        const sortedTypes = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+        this.charts.tiposSolicitudCap = new Chart(canvasTiposCap, {
+          type: 'bar',
+          data: {
+            labels: sortedTypes.map(x => x[0]),
+            datasets: [{
+              label: 'Registros',
+              data: sortedTypes.map(x => x[1]),
+              backgroundColor: 'rgba(0, 135, 110, 0.75)',
+              borderColor: this.colors.green,
+              borderWidth: 1,
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+              y: { ticks: { color: '#FAFAFA', font: { size: 9.5 } }, grid: { display: false } }
+            }
+          }
+        });
+      }
     }
   }
 
@@ -1635,13 +2099,13 @@ class IndicatorsView {
     let colWidths = [];
     if (this.activeSubTab === 'desinstalacion') {
       // 13 cols
-      colWidths = ['8%','14%','7%','8%','7%','9%','10%','8%','8%','9%','6%','5%','6%'];
+      colWidths = ['8%', '14%', '7%', '8%', '7%', '9%', '10%', '8%', '8%', '9%', '6%', '5%', '6%'];
     } else if (this.activeSubTab === 'publicidad') {
       // 15 cols
-      colWidths = ['7%','12%','6%','7%','6%','8%','9%','7%','5%','5%','5%','5%','5%','5%','4%'];
+      colWidths = ['7%', '12%', '6%', '7%', '6%', '8%', '9%', '7%', '5%', '5%', '5%', '5%', '5%', '5%', '4%'];
     } else {
       // 15 cols (capacitacion)
-      colWidths = ['7%','12%','6%','7%','6%','8%','9%','7%','7%','6%','7%','8%','5%','4%','6%'];
+      colWidths = ['7%', '12%', '6%', '7%', '6%', '8%', '9%', '7%', '7%', '6%', '7%', '8%', '5%', '4%', '6%'];
     }
 
     const colgroupHtml = `<colgroup>${colWidths.map(w => `<col style="width:${w}">`).join('')}</colgroup>`;
@@ -1689,6 +2153,8 @@ class IndicatorsView {
             rawVal = r['TECNICO'] || r['INGENIERO DE CAMPO'] || r['TÉCNICO'];
           } else if (c.key === 'ESTADO DE LA VISITA') {
             rawVal = this.getRecordVisitStatus(r);
+          } else if (c.key === 'TIPOLOGIA') {
+            rawVal = this.normalizeTipologia(rawVal);
           }
           valHtml = this.model.formatCellValue(c.key, rawVal);
         }
@@ -1846,16 +2312,29 @@ class IndicatorsView {
     overlay.className = 'custom-modal-overlay';
     overlay.id = 'customKpiModal';
 
+    const isFallasModal = title.includes('Fallas y Retrasos');
+    let extraHeaderHtml = '';
+    if (isFallasModal) {
+      extraHeaderHtml = `
+        <div style="height: 180px; margin-bottom: 20px; background: rgba(0,0,0,0.15); border-radius: 8px; padding: 10px;">
+          <canvas id="kpiModalFallasChart"></canvas>
+        </div>
+        <div class="kpi-modal-filters" id="kpiModalFilters" style="margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap;">
+        </div>
+      `;
+    }
+
     overlay.innerHTML = `
-      <div class="custom-modal-container">
+      <div class="custom-modal-container" style="${isFallasModal ? 'max-width: 900px;' : ''}">
         <div class="custom-modal-header">
-          <h3>${title} (${recordsList.length})</h3>
+          <h3>${title} (<span id="kpiModalCount">${recordsList.length}</span>)</h3>
           <div style="display: flex; align-items: center; gap: 8px;">
             <button class="btn-export-excel" id="btnExportKpiModal" title="Exportar a Excel" style="font-size: 11px; padding: 6px 12px;">⬇ Exportar</button>
             <button class="btn-close-modal" id="btnCloseKpiModal">✕</button>
           </div>
         </div>
         <div class="custom-modal-body">
+          ${extraHeaderHtml}
           <div class="modal-table-wrapper">
             <table class="modal-table">
               <thead>
@@ -1870,7 +2349,6 @@ class IndicatorsView {
                 </tr>
               </thead>
               <tbody id="modalTableBody">
-                <!-- Se llena dinámicamente -->
               </tbody>
             </table>
           </div>
@@ -1879,12 +2357,19 @@ class IndicatorsView {
     `;
 
     document.body.appendChild(overlay);
-
     const tbody = overlay.querySelector('#modalTableBody');
-    if (recordsList.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">No hay registros en esta categoría.</td></tr>`;
-    } else {
-      recordsList.forEach(r => {
+    let currentFilteredRecords = recordsList;
+
+    const renderRows = (records) => {
+      tbody.innerHTML = '';
+      const countEl = overlay.querySelector('#kpiModalCount');
+      if (countEl) countEl.textContent = records.length;
+
+      if (records.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">No hay registros.</td></tr>`;
+        return;
+      }
+      records.forEach(r => {
         const tr = document.createElement('tr');
         const isAb = !!r._is_abierto;
         const stateBadge = isAb
@@ -1916,19 +2401,97 @@ class IndicatorsView {
 
         tbody.appendChild(tr);
       });
+    };
+
+    if (isFallasModal && recordsList.length > 0) {
+      const respCounts = {};
+      recordsList.forEach(r => {
+        let resp = (r['RESPONSABLE INCUMPLIMIENTO'] || '').trim().toUpperCase();
+        if (!resp) resp = 'NO INDICADO';
+        respCounts[resp] = (respCounts[resp] || 0) + 1;
+      });
+
+      const labels = Object.keys(respCounts).sort((a,b) => respCounts[b] - respCounts[a]);
+      const dataVals = labels.map(l => respCounts[l]);
+
+      const ctx = document.getElementById('kpiModalFallasChart');
+      if (ctx) {
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Fallas por Responsable',
+              data: dataVals,
+              backgroundColor: 'rgba(235, 205, 90, 0.8)',
+              borderColor: 'rgba(235, 205, 90, 1)',
+              borderWidth: 1,
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+              x: { ticks: { color: '#FAFAFA' }, grid: { display: false } }
+            }
+          }
+        });
+      }
+
+      const filterContainer = document.getElementById('kpiModalFilters');
+      let btnHtml = `<button class="btn-modal-filter active" data-filter="ALL" style="padding: 6px 12px; border-radius: 20px; border: 1px solid var(--bdb-gold); background: var(--bdb-gold); color: #000; font-weight: bold; cursor: pointer;">Todos (${recordsList.length})</button>`;
+      
+      labels.forEach(l => {
+        btnHtml += `<button class="btn-modal-filter" data-filter="${l}" style="padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #fff; cursor: pointer;">${l} (${respCounts[l]})</button>`;
+      });
+      filterContainer.innerHTML = btnHtml;
+
+      filterContainer.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+          filterContainer.querySelectorAll('button').forEach(b => {
+            b.style.background = 'transparent';
+            b.style.color = '#fff';
+            b.style.border = '1px solid rgba(255,255,255,0.2)';
+            b.classList.remove('active');
+          });
+          e.target.style.background = 'var(--bdb-gold)';
+          e.target.style.color = '#000';
+          e.target.style.border = '1px solid var(--bdb-gold)';
+          e.target.classList.add('active');
+
+          const filter = e.target.getAttribute('data-filter');
+          currentFilteredRecords = filter === 'ALL' 
+            ? recordsList 
+            : recordsList.filter(r => {
+                let resp = (r['RESPONSABLE INCUMPLIMIENTO'] || '').trim().toUpperCase();
+                if (!resp) resp = 'NO INDICADO';
+                return resp === filter;
+              });
+          
+          renderRows(currentFilteredRecords);
+        }
+      });
     }
+
+    renderRows(currentFilteredRecords);
 
     overlay.querySelector('#btnCloseKpiModal').addEventListener('click', () => {
       this.closeModal('customKpiModal');
     });
 
-    // Exportar los registros del modal a Excel
     overlay.querySelector('#btnExportKpiModal')?.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (this.exportExcelCallback && recordsList.length > 0) {
-        const safeName = title.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ\s]/g, '').replace(/\s+/g, '_').substring(0, 50);
-        this.exportExcelCallback(recordsList, safeName || 'Detalle_Modal');
-      } else if (recordsList.length === 0) {
+      if (this.exportExcelCallback && currentFilteredRecords.length > 0) {
+        let safeName = title.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ\s]/g, '').replace(/\s+/g, '_').substring(0, 50);
+        if (isFallasModal) {
+           const activeFilterBtn = document.querySelector('#kpiModalFilters button.active');
+           const filterVal = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'ALL';
+           safeName += '_' + filterVal.replace(/[^a-zA-Z0-9]/g, '_');
+        }
+        this.exportExcelCallback(currentFilteredRecords, safeName || 'Detalle_Modal');
+      } else if (currentFilteredRecords.length === 0) {
         alert('No hay registros para exportar.');
       }
     });
@@ -1949,6 +2512,7 @@ class IndicatorsView {
 
     const taCode = record['CODIGO_TAREA'] || record['NRO PEDIDO / ORDEN DE COMPRA'] || '—';
     const estabName = record['ESTABLECIMIENTO'] || record['NOMBRE PUNTO DE ATENCIÓN'] || '—';
+    const impFields = this.getImportantDescFields(record);
 
     overlay.innerHTML = `
       <div class="custom-modal-container" style="max-width: 1000px;">
@@ -2018,14 +2582,66 @@ class IndicatorsView {
                 <label>Cumplimiento SLA</label>
                 <span>${(record['CUMPLE SLA'] || record['DENTRO DE LOS SLA'] || '—') === 'SI' ? '✅ Cumple' : '❌ Vencido'}</span>
               </div>
+              ${impFields?.contacto ? `
+              <div class="metadata-item">
+                <label>Contacto Punto</label>
+                <span style="font-weight: 500;">👤 ${impFields.contacto}</span>
+              </div>
+              ` : ''}
+              ${impFields?.telefono ? `
+              <div class="metadata-item">
+                <label>Teléfono Contacto</label>
+                <span style="font-weight: 500;">📞 ${impFields.telefono}</span>
+              </div>
+              ` : ''}
+              ${impFields?.email ? `
+              <div class="metadata-item" style="grid-column: 1 / -1;">
+                <label>Email Contacto</label>
+                <span style="font-weight: 500;">✉️ ${impFields.email}</span>
+              </div>
+              ` : ''}
+              ${impFields?.horario ? `
+              <div class="metadata-item">
+                <label>Horario Atención</label>
+                <span>🕒 ${impFields.horario}</span>
+              </div>
+              ` : ''}
+              ${impFields?.tarjeta ? `
+              <div class="metadata-item">
+                <label>N° Tarjeta Sembrado</label>
+                <span style="font-family: var(--font-mono); color: var(--bdb-yellow-pref); font-weight: 700;">💳 ${impFields.tarjeta}</span>
+              </div>
+              ` : ''}
+              ${impFields?.requierePos ? `
+              <div class="metadata-item">
+                <label>Requiere POS</label>
+                <span style="font-weight: 600; color: ${impFields.requierePos.toUpperCase().includes('SI') ? '#10b981' : '#ef4444'}">📟 ${impFields.requierePos}</span>
+              </div>
+              ` : ''}
               <div class="metadata-item" style="grid-column: 1 / -1;">
                 <label>Responsable de Retraso</label>
-                <span>${record['RESPONSABLE INCUMPLIMIENTO'] || 'Sin retrasos / No aplica'}</span>
+                <span>${(() => {
+                  const isDelayed = (record['CUMPLE SLA'] || record['DENTRO DE LOS SLA'] || '').toString().toUpperCase() === 'NO';
+                  const respInc = record['RESPONSABLE INCUMPLIMIENTO'] || '';
+                  if (!respInc && isDelayed) return '<span style="color: #ef4444; font-weight: 600;">⚠️ No se indicó responsable en Sytex</span>';
+                  if (!respInc && !isDelayed) return 'Sin retrasos / No aplica';
+                  return respInc;
+                })()}</span>
               </div>
               <div class="metadata-item" style="grid-column: 1 / -1;">
                 <label>Observaciones o Novedades Adicionales</label>
                 <span>${record['OBSERVACIÓN ESTANDAR'] || '—'}</span>
               </div>
+              <div class="metadata-item" style="grid-column: 1 / -1;">
+                <label>Tipo de Solicitud</label>
+                <span style="color: var(--bdb-yellow-pref); font-weight: 700;">${this.getRequestType(record) || '—'}</span>
+              </div>
+              ${(record['DESCRIPCION'] || '').trim() ? `
+              <div class="metadata-item" style="grid-column: 1 / -1;">
+                <label>Descripción de la Tarea (Sytex)</label>
+                <div style="font-size: 11.5px; background: rgba(0, 0, 0, 0.25); padding: 12px; border-radius: 8px; border-left: 3.5px solid var(--bdb-gold); line-height: 1.5; max-height: 180px; overflow-y: auto; white-space: pre-line; margin-top: 5px; font-family: var(--font-sans); color: #e2e8f0;">${record['DESCRIPCION'].replace(/ \/ /g, '\n')}</div>
+              </div>
+              ` : ''}
             </div>
 
             <!-- Kit de Publicidad (detalle visual) -->
