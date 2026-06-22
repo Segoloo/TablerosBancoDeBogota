@@ -62,11 +62,19 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--bg-app);
+  background: linear-gradient(-45deg, var(--bg-app), var(--bdb-blue-dark), #0a1f44, #001026);
+  background-size: 400% 400%;
+  animation: gradientBG 20s ease infinite;
   color: var(--text-normal);
   overflow: hidden;
   height: 100vh;
   line-height: 1.5;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .hidden {
@@ -172,35 +180,56 @@ body {
 /* Orbes Dashboard */
 .dashboard-orb {
   position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: -1;
+  pointer-events: none;
 }
 .orb-bdb-dark {
   width: 600px;
   height: 600px;
-  background: rgba(20, 50, 125, 0.2);
+  background: rgba(20, 50, 125, 0.25);
   top: -10%;
   right: -10%;
+  animation: float1 18s infinite ease-in-out;
 }
 .orb-bdb-accent {
-  width: 400px;
-  height: 400px;
-  background: rgba(214, 162, 24, 0.1);
-  bottom: -10%;
-  left: -5%;
+  width: 500px;
+  height: 500px;
+  background: rgba(214, 162, 24, 0.15);
+  bottom: -15%;
+  left: -10%;
+  animation: float2 22s infinite ease-in-out reverse;
 }
 .orb-bdb-red {
   width: 450px;
   height: 450px;
-  background: rgba(205, 50, 50, 0.08);
+  background: rgba(205, 50, 50, 0.1);
   top: 15%;
   right: 25%;
-  animation: pulseOrb 14s infinite alternate ease-in-out;
+  animation: float1 25s infinite ease-in-out;
 }
 .orb-linea-accent {
   width: 500px;
   height: 500px;
-  background: rgba(197, 211, 54, 0.05);
+  background: rgba(197, 211, 54, 0.08);
   top: 40%;
   left: 30%;
+  animation: float2 20s infinite ease-in-out;
+}
+
+@keyframes float1 {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -60px) scale(1.1); }
+  66% { transform: translate(-30px, 30px) scale(0.95); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes float2 {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-60px, 40px) scale(1.15); }
+  66% { transform: translate(30px, -30px) scale(0.85); }
+  100% { transform: translate(0, 0) scale(1); }
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1084,6 +1113,10 @@ body {
   grid-template-columns: repeat(5, 1fr);
   gap: 14px;
   margin-top: 10px;
+}
+
+.kpi-board.six-cols {
+  grid-template-columns: repeat(6, 1fr);
 }
 
 /* Responsive KPI board */
@@ -2699,4 +2732,42 @@ body {
 .excel-dropdown-item input[type="checkbox"] {
   accent-color: var(--bdb-gold);
   cursor: pointer;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   WATERMARK & CREATIVE BRANDING - BANCO DE BOGOTÁ
+   ══════════════════════════════════════════════════════════════════ */
+.app-container {
+  position: relative;
+  z-index: 1;
+}
+
+.app-container::before {
+  content: "";
+  position: fixed;
+  top: 50%;
+  left: 55%; 
+  transform: translate(-50%, -50%);
+  width: 90vh;
+  height: 90vh;
+  background-image: url('../assets/logo-bdb-sintexto.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: -1;
+  filter: grayscale(100%) brightness(250%);
+}
+
+.chart-card {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 26, 58, 0.65);
+}
+
+.kpi-card-dashboard {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 26, 58, 0.65);
 }

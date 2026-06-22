@@ -16,6 +16,7 @@ class IndicatorsView {
     // Paleta de Colores Oficial Banco de Bogotá
     this.colors = {
       blue: '#14327D',
+      blueLight: '#325AA8',
       blueDark: '#001A3A',
       gold: '#D6A218',
       green: '#00876E',
@@ -178,6 +179,32 @@ class IndicatorsView {
         <div class="filters-panel">
           <div class="filters-header">Filtros de Búsqueda del Tablero</div>
           <div class="filters-grid">
+            
+            <!-- FILTRO ESTRELLA -->
+            <div class="filter-group" style="flex: 1.5; min-width: 230px;">
+              <label style="color: #D6A218; font-size: 11.5px;">🌟 Código de Punto (ID Sitio)</label>
+              <input type="text" id="txtPunto" placeholder="Ej. 12345" class="table-search-box" style="width: 100%; border: 1px solid #D6A218; background: rgba(214,162,24,0.1); color: #FFF; font-weight: bold; box-shadow: 0 0 10px rgba(214,162,24,0.2);">
+            </div>
+
+            <!-- OTROS CAMPOS DE TEXTO / FECHA -->
+            <div class="filter-group">
+              <label>Código Tarea (TA)</label>
+              <input type="text" id="txtTA" placeholder="Ej. T-1234" class="table-search-box" style="width: 100%;">
+            </div>
+            <div class="filter-group">
+              <label>Código Form.</label>
+              <input type="text" id="txtFO" placeholder="Ej. FO-1234" class="table-search-box" style="width: 100%;">
+            </div>
+            <div class="filter-group">
+              <label>Fecha Sol. (Desde)</label>
+              <input type="date" id="txtDateStart" class="table-search-box" style="width: 100%; color-scheme: dark;">
+            </div>
+            <div class="filter-group">
+              <label>Fecha Sol. (Hasta)</label>
+              <input type="date" id="txtDateEnd" class="table-search-box" style="width: 100%; color-scheme: dark;">
+            </div>
+
+            <!-- DROPDOWNS -->
             <div class="filter-group">
               <label>Departamento</label>
               <div class="excel-dropdown" id="ddDepto" data-filter="depto">
@@ -207,8 +234,36 @@ class IndicatorsView {
               </div>
             </div>
             <div class="filter-group">
+              <label>Tipología</label>
+              <div class="excel-dropdown" id="ddTipologia" data-filter="tipologia">
+                <button class="excel-dropdown-btn">Todos</button>
+                <div class="excel-dropdown-content hidden">
+                  <input type="text" placeholder="Buscar..." class="excel-dropdown-search">
+                  <div class="excel-dropdown-actions">
+                    <button class="btn-dd-all">Todos</button>
+                    <button class="btn-dd-none">Ninguno</button>
+                  </div>
+                  <div class="excel-dropdown-list"></div>
+                </div>
+              </div>
+            </div>
+            <div class="filter-group">
               <label>Estado</label>
               <div class="excel-dropdown" id="ddEstado" data-filter="estado">
+                <button class="excel-dropdown-btn">Todos</button>
+                <div class="excel-dropdown-content hidden">
+                  <input type="text" placeholder="Buscar..." class="excel-dropdown-search">
+                  <div class="excel-dropdown-actions">
+                    <button class="btn-dd-all">Todos</button>
+                    <button class="btn-dd-none">Ninguno</button>
+                  </div>
+                  <div class="excel-dropdown-list"></div>
+                </div>
+              </div>
+            </div>
+            <div class="filter-group">
+              <label>Estado Visita</label>
+              <div class="excel-dropdown" id="ddEstadoVisita" data-filter="estadoVisita">
                 <button class="excel-dropdown-btn">Todos</button>
                 <div class="excel-dropdown-content hidden">
                   <input type="text" placeholder="Buscar..." class="excel-dropdown-search">
@@ -235,7 +290,7 @@ class IndicatorsView {
               </div>
             </div>
             <div class="filter-group">
-              <label>Técnico de Campo</label>
+              <label>Técnico</label>
               <div class="excel-dropdown" id="ddTecnico" data-filter="tecnico">
                 <button class="excel-dropdown-btn">Todos</button>
                 <div class="excel-dropdown-content hidden">
@@ -249,21 +304,7 @@ class IndicatorsView {
               </div>
             </div>
             <div class="filter-group">
-              <label>Tipología</label>
-              <div class="excel-dropdown" id="ddTipologia" data-filter="tipologia">
-                <button class="excel-dropdown-btn">Todos</button>
-                <div class="excel-dropdown-content hidden">
-                  <input type="text" placeholder="Buscar..." class="excel-dropdown-search">
-                  <div class="excel-dropdown-actions">
-                    <button class="btn-dd-all">Todos</button>
-                    <button class="btn-dd-none">Ninguno</button>
-                  </div>
-                  <div class="excel-dropdown-list"></div>
-                </div>
-              </div>
-            </div>
-            <div class="filter-group">
-              <label>Forma de Atención</label>
+              <label>Forma Atención</label>
               <div class="excel-dropdown" id="ddFormaAtencion" data-filter="formaAtencion">
                 <button class="excel-dropdown-btn">Todos</button>
                 <div class="excel-dropdown-content hidden">
@@ -276,37 +317,13 @@ class IndicatorsView {
                 </div>
               </div>
             </div>
-            <div class="filter-group">
-              <label>Estado de la Visita</label>
-              <div class="excel-dropdown" id="ddEstadoVisita" data-filter="estadoVisita">
-                <button class="excel-dropdown-btn">Todos</button>
-                <div class="excel-dropdown-content hidden">
-                  <input type="text" placeholder="Buscar..." class="excel-dropdown-search">
-                  <div class="excel-dropdown-actions">
-                    <button class="btn-dd-all">Todos</button>
-                    <button class="btn-dd-none">Ninguno</button>
-                  </div>
-                  <div class="excel-dropdown-list"></div>
-                </div>
-              </div>
-            </div>
-            <!-- Nuevos Filtros Avanzados -->
-            <div class="filter-group">
-              <label>Código de Punto (ID Sitio)</label>
-              <input type="text" id="txtPunto" placeholder="Ej. 12345" class="table-search-box" style="width: 100%;">
-            </div>
-            <div class="filter-group">
-              <label>Código de Tarea (TA)</label>
-              <input type="text" id="txtTA" placeholder="Ej. T-1234" class="table-search-box" style="width: 100%;">
-            </div>
-            <div class="filter-group">
-              <label>Código de Formulario (FO)</label>
-              <input type="text" id="txtFO" placeholder="Ej. FO-1234" class="table-search-box" style="width: 100%;">
-            </div>
-            <div class="filter-actions" style="grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+
+            <!-- BOTONES -->
+            <div class="filter-actions" style="display: flex; gap: 8px; flex: 1; min-width: 150px; justify-content: flex-end;">
               <button class="btn-apply-filters" id="btnApplyFilters">✦ Filtrar</button>
               <button class="btn-reset-filters" id="btnResetFilters">↺ Reiniciar</button>
             </div>
+            
           </div>
         </div>
 
@@ -347,7 +364,8 @@ class IndicatorsView {
         const tec = r['TECNICO'] || r['INGENIERO DE CAMPO'] || r['TÉCNICO'];
         if (tec) tecnicos.add(tec.toString().trim());
 
-        const tipo = r['TIPOLOGIA'] || 'SIN TIPOLOGÍA';
+        let tipo = r['TIPOLOGIA'] || 'SIN TIPOLOGÍA';
+        if (tipo !== 'SIN TIPOLOGÍA') tipo = this.normalizeTipologia(tipo);
         tipologias.add(tipo.toString().trim());
 
         if (r['FORMA DE ATENCION']) formasAtencion.add(r['FORMA DE ATENCION'].toString().trim());
@@ -381,13 +399,17 @@ class IndicatorsView {
     this.buildExcelDropdown('ddFormaAtencion', formasAtencion, 'formaAtencion');
     this.buildExcelDropdown('ddEstadoVisita', estadosVisita, 'estadoVisita');
 
-    // Sincronizar inputs de texto
+    // Sincronizar inputs de texto y fechas
     const txtPunto = document.getElementById('txtPunto');
     if (txtPunto) txtPunto.value = this.model.filters.punto || '';
     const txtTA = document.getElementById('txtTA');
     if (txtTA) txtTA.value = this.model.filters.ta || '';
     const txtFO = document.getElementById('txtFO');
     if (txtFO) txtFO.value = this.model.filters.fo || '';
+    const txtDateStart = document.getElementById('txtDateStart');
+    if (txtDateStart) txtDateStart.value = this.model.filters.dateStart || '';
+    const txtDateEnd = document.getElementById('txtDateEnd');
+    if (txtDateEnd) txtDateEnd.value = this.model.filters.dateEnd || '';
   }
 
   // Construye y controla el comportamiento tipo Excel del dropdown multi-select (Enfoque MVC)
@@ -540,14 +562,19 @@ class IndicatorsView {
     });
 
     // 2. Manejo de Filtros
-    document.getElementById('btnApplyFilters')?.addEventListener('click', () => {
-      // Sincronizar inputs de texto con el modelo
+    const applyAdvancedFilters = () => {
       this.model.filters.punto = document.getElementById('txtPunto')?.value || '';
       this.model.filters.ta = document.getElementById('txtTA')?.value || '';
       this.model.filters.fo = document.getElementById('txtFO')?.value || '';
+      this.model.filters.dateStart = document.getElementById('txtDateStart')?.value || '';
+      this.model.filters.dateEnd = document.getElementById('txtDateEnd')?.value || '';
 
       if (this.filterChangeCallback) this.filterChangeCallback();
-    });
+    };
+
+    document.getElementById('btnApplyFilters')?.addEventListener('click', applyAdvancedFilters);
+    document.getElementById('txtDateStart')?.addEventListener('change', applyAdvancedFilters);
+    document.getElementById('txtDateEnd')?.addEventListener('change', applyAdvancedFilters);
 
     document.getElementById('btnResetFilters')?.addEventListener('click', () => {
       this.model.filters = {
@@ -561,13 +588,17 @@ class IndicatorsView {
         estadoVisita: [],
         punto: '',
         ta: '',
-        fo: ''
+        fo: '',
+        dateStart: '',
+        dateEnd: ''
       };
 
-      // Resetear inputs de texto
+      // Resetear inputs de texto y fechas
       const txtPunto = document.getElementById('txtPunto'); if (txtPunto) txtPunto.value = '';
       const txtTA = document.getElementById('txtTA'); if (txtTA) txtTA.value = '';
       const txtFO = document.getElementById('txtFO'); if (txtFO) txtFO.value = '';
+      const txtDateStart = document.getElementById('txtDateStart'); if (txtDateStart) txtDateStart.value = '';
+      const txtDateEnd = document.getElementById('txtDateEnd'); if (txtDateEnd) txtDateEnd.value = '';
 
       // Volver a poblar filtros
       const rawData = this.model.rawIndicators;
@@ -637,7 +668,7 @@ class IndicatorsView {
     // Renderizar estructura base del sub-panel
     let chartsLayoutHtml = '';
 
-    if (this.activeSubTab === 'implementacion' || this.activeSubTab === 'desinstalacion') {
+    if (this.activeSubTab === 'implementacion') {
       chartsLayoutHtml = `
         <div class="charts-layout">
           <!-- Gráfico de Línea - Tendencia -->
@@ -662,6 +693,46 @@ class IndicatorsView {
             <div class="chart-container-wrapper" style="height: 250px;">
               <canvas id="chartDepto"></canvas>
             </div>
+          </div>
+        </div>
+      `;
+    } else if (this.activeSubTab === 'desinstalacion') {
+      chartsLayoutHtml = `
+        <div class="charts-layout">
+          <!-- Fila 1 -->
+          <div class="chart-card">
+            <div class="chart-title">Elementos Desinstalados</div>
+            <div class="chart-container-wrapper"><canvas id="chartDesinstElementos"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Distribución por Tipología</div>
+            <div class="chart-container-wrapper"><canvas id="chartDesinstTipologia"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Estado Final Visita</div>
+            <div class="chart-container-wrapper"><canvas id="chartDesinstEstado"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Cumplimiento SLA</div>
+            <div class="chart-container-wrapper"><canvas id="chartDesinstSla"></canvas></div>
+          </div>
+
+          <!-- Fila 2 -->
+          <div class="chart-card">
+            <div class="chart-title">Tendencia Mensual</div>
+            <div class="chart-container-wrapper"><canvas id="chartDesinstTendencia"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Desinstalaciones por Zona</div>
+            <div class="chart-container-wrapper"><canvas id="chartDesinstZonas"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Top Técnicos (Volumen)</div>
+            <div class="chart-container-wrapper"><canvas id="chartDesinstTecnicos"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Responsabilidad Incumplimientos</div>
+            <div class="chart-container-wrapper"><canvas id="chartDesinstResp"></canvas></div>
           </div>
         </div>
       `;
@@ -733,7 +804,7 @@ class IndicatorsView {
           </div>
 
           <!-- Detalle de Solicitudes (Nombres Reales) -->
-          <div class="chart-card wide-chart">
+          <div class="chart-card" style="grid-column: span 2;">
             <div class="chart-title">Detalle de Solicitudes (Nombres Reales)</div>
             <div class="chart-container-wrapper" style="height: 250px;">
               <canvas id="chartTiposSolicitudPublicidad"></canvas>
@@ -741,7 +812,7 @@ class IndicatorsView {
           </div>
 
           <!-- Causales de No Instalación -->
-          <div class="chart-card wide-chart">
+          <div class="chart-card" style="grid-column: span 2;">
             <div class="chart-title">Causales de No Instalación</div>
             <div class="chart-container-wrapper" style="height: 260px;">
               <canvas id="chartCausalNoInstalacion"></canvas>
@@ -760,44 +831,40 @@ class IndicatorsView {
     } else if (this.activeSubTab === 'capacitacion') {
       chartsLayoutHtml = `
         <div class="charts-layout">
-          <!-- Facturables vs Garantías -->
+          <!-- Fila 1 -->
           <div class="chart-card">
-            <div class="chart-title">Capacitación: Facturables vs Garantías</div>
-            <div class="chart-container-wrapper">
-              <canvas id="chartFacturablesGarantias"></canvas>
-            </div>
+            <div class="chart-title">Facturables vs Garantías</div>
+            <div class="chart-container-wrapper"><canvas id="chartCapFactVsGar"></canvas></div>
           </div>
-
-          <!-- Distribución por Tipologías -->
+          <div class="chart-card">
+            <div class="chart-title">Tipos de Solicitud</div>
+            <div class="chart-container-wrapper"><canvas id="chartCapTiposSol"></canvas></div>
+          </div>
           <div class="chart-card">
             <div class="chart-title">Distribución por Tipología</div>
-            <div class="chart-container-wrapper">
-              <canvas id="chartTipologiaCapacitacion"></canvas>
-            </div>
+            <div class="chart-container-wrapper"><canvas id="chartCapTipologia"></canvas></div>
           </div>
-
-          <!-- Comparativa Publicidad y Capacitación -->
           <div class="chart-card">
-            <div class="chart-title">Comparativa: Tipo de Solicitud</div>
-            <div class="chart-container-wrapper">
-              <canvas id="chartComparativoCapacitacion"></canvas>
-            </div>
+            <div class="chart-title">Cumplimiento SLA</div>
+            <div class="chart-container-wrapper"><canvas id="chartCapSla"></canvas></div>
           </div>
 
-          <!-- Detalle de Solicitudes (Nombres Reales) -->
-          <div class="chart-card wide-chart">
-            <div class="chart-title">Detalle de Solicitudes (Nombres Reales)</div>
-            <div class="chart-container-wrapper" style="height: 250px;">
-              <canvas id="chartTiposSolicitudCapacitacion"></canvas>
-            </div>
+          <!-- Fila 2 -->
+          <div class="chart-card">
+            <div class="chart-title">Estado Final Visita</div>
+            <div class="chart-container-wrapper"><canvas id="chartCapEstado"></canvas></div>
           </div>
-
-          <!-- Estado y Causas de Falla en Capacitación -->
-          <div class="chart-card wide-chart">
-            <div class="chart-title">Estado y Causas de Visita de Capacitación</div>
-            <div class="chart-container-wrapper" style="height: 250px;">
-              <canvas id="chartEstadoCapacitacion"></canvas>
-            </div>
+          <div class="chart-card">
+            <div class="chart-title">Solo Cap. vs Cap. + Pub.</div>
+            <div class="chart-container-wrapper"><canvas id="chartCapAmbos"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Atenciones por Zona Lineacom</div>
+            <div class="chart-container-wrapper"><canvas id="chartCapZonas"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Top Técnicos (Volumen)</div>
+            <div class="chart-container-wrapper"><canvas id="chartCapTecnicos"></canvas></div>
           </div>
         </div>
       `;
@@ -900,6 +967,12 @@ class IndicatorsView {
   renderKPIs(rows, slaField, respField) {
     const container = document.getElementById('kpiBoard');
     if (!container) return;
+
+    if (this.activeSubTab === 'capacitacion') {
+      container.classList.add('six-cols');
+    } else {
+      container.classList.remove('six-cols');
+    }
 
     const total = rows.length;
     const abiertoRows = rows.filter(r => r._is_abierto);
@@ -1162,8 +1235,8 @@ class IndicatorsView {
 
   // Genera los gráficos de Chart.js
   renderCharts(rows, slaField) {
-    if (this.activeSubTab === 'implementacion' || this.activeSubTab === 'desinstalacion') {
-      // ════ TAB DE IMPLEMENTACIÓN O DESINSTALACIÓN: TENDENCIA, SLA Y DEPTOS ════
+    if (this.activeSubTab === 'implementacion') {
+      // ════ TAB DE IMPLEMENTACIÓN: TENDENCIA, SLA Y DEPTOS ════
 
       // 1. Gráfico de Línea - Tendencia Mensual
       const canvasTrend = document.getElementById('chartTrend');
@@ -1287,6 +1360,273 @@ class IndicatorsView {
         });
       }
 
+    } else if (this.activeSubTab === 'desinstalacion') {
+      // ════ TAB DE DESINSTALACIÓN: 8 GRÁFICOS ════
+      let marquesinaCount = 0;
+      let cartelCount = 0;
+      let stickerVidrioCount = 0;
+      let stickerMuroCount = 0;
+      let habladorCount = 0;
+
+      const respIncumplimiento = {};
+      const respIncumplimientoRows = {}; 
+      const tipologiaCounts = {};
+      const estadoVisitaCounts = {};
+      const zonaCounts = {};
+      const techCounts = {};
+      let slaSi = 0, slaNo = 0;
+      const trendCounts = {};
+
+      rows.forEach(r => {
+        // Elementos desinstalados
+        if ((r['SE_DESINSTALA_MARQUESINA'] || '').trim().toUpperCase() === 'SI') marquesinaCount++;
+        if ((r['SE_DESINSTALA_CARTEL'] || '').trim().toUpperCase() === 'SI') cartelCount++;
+        if ((r['SE_DESINSTALA_STICKER_VIDRIO'] || '').trim().toUpperCase() === 'SI') stickerVidrioCount++;
+        if ((r['SE_DESINSTALA_STICKER_MURO'] || '').trim().toUpperCase() === 'SI') stickerMuroCount++;
+        if ((r['SE_DESINSTALA_HABLADOR'] || '').trim().toUpperCase() === 'SI') habladorCount++;
+
+        // Responsabilidad Incumplimiento
+        const respVal = (r['RESPONSABLE INCUMPLIMIENTO'] || '').trim().toUpperCase();
+        if (respVal && respVal !== 'N/A' && respVal !== '—' && respVal !== 'NULL' && respVal !== 'NO INDICADO') {
+          respIncumplimiento[respVal] = (respIncumplimiento[respVal] || 0) + 1;
+          if (!respIncumplimientoRows[respVal]) respIncumplimientoRows[respVal] = [];
+          respIncumplimientoRows[respVal].push(r);
+        }
+
+        // Tipología
+        const tipo = this.normalizeTipologia(r['TIPOLOGIA']);
+        tipologiaCounts[tipo] = (tipologiaCounts[tipo] || 0) + 1;
+
+        // Estado Visita
+        const estado = this.getRecordVisitStatus(r);
+        estadoVisitaCounts[estado] = (estadoVisitaCounts[estado] || 0) + 1;
+
+        // Zonas
+        const zonaVal = (r['ZONA LINEACOM'] || r['COORDINADOR ENCARGADO'] || 'SIN ZONA').trim().toUpperCase();
+        zonaCounts[zonaVal] = (zonaCounts[zonaVal] || 0) + 1;
+
+        // Técnicos
+        const tec = (r['TECNICO'] || r['INGENIERO DE CAMPO'] || r['TÉCNICO'] || 'SIN ASIGNAR').trim();
+        techCounts[tec] = (techCounts[tec] || 0) + 1;
+
+        // SLA
+        const vSla = (r[slaField] || '').toString().toUpperCase().trim();
+        if (vSla === 'SI') slaSi++;
+        if (vSla === 'NO') slaNo++;
+
+        // Tendencia Mensual
+        const dates = this.model.getRecordDates(r, this.activeSubTab);
+        if (dates.start) {
+          const key = `${dates.start.getFullYear()}-${String(dates.start.getMonth() + 1).padStart(2, '0')}`;
+          trendCounts[key] = (trendCounts[key] || 0) + 1;
+        }
+      });
+
+      // 1. Elementos Desinstalados (Barra vertical)
+      const canvasElem = document.getElementById('chartDesinstElementos');
+      if (canvasElem) {
+        this.charts.desinstElem = new Chart(canvasElem, {
+          type: 'bar',
+          data: {
+            labels: ['Marquesina', 'Cartel', 'St. Vidrio', 'St. Muro', 'Hablador'],
+            datasets: [{
+              label: 'Desinstalaciones',
+              data: [marquesinaCount, cartelCount, stickerVidrioCount, stickerMuroCount, habladorCount],
+              backgroundColor: 'rgba(214, 162, 24, 0.85)',
+              borderColor: this.colors.gold,
+              borderWidth: 1,
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
+              y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } }
+            }
+          }
+        });
+      }
+
+      // 2. Tipología (Doughnut)
+      const canvasTipo = document.getElementById('chartDesinstTipologia');
+      if (canvasTipo) {
+        const sorted = Object.entries(tipologiaCounts).sort((a,b) => b[1]-a[1]);
+        this.charts.desinstTipo = new Chart(canvasTipo, {
+          type: 'doughnut',
+          data: {
+            labels: sorted.map(x => x[0]),
+            datasets: [{
+              data: sorted.map(x => x[1]),
+              backgroundColor: [this.colors.blueLight, this.colors.gold, this.colors.pink, this.colors.green],
+              borderColor: 'rgba(0, 26, 58, 0.8)', borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, cutout: '65%',
+            plugins: { legend: { position: 'bottom', labels: { color: '#CBD5E1', font: { size: 10 } } } }
+          }
+        });
+      }
+
+      // 3. Estado Final (Pie)
+      const canvasEstado = document.getElementById('chartDesinstEstado');
+      if (canvasEstado) {
+        const sorted = Object.entries(estadoVisitaCounts).sort((a,b) => b[1]-a[1]);
+        this.charts.desinstEstado = new Chart(canvasEstado, {
+          type: 'pie',
+          data: {
+            labels: sorted.map(x => x[0]),
+            datasets: [{
+              data: sorted.map(x => x[1]),
+              backgroundColor: [this.colors.green, this.colors.gold, this.colors.red, this.colors.blueLight],
+              borderColor: 'rgba(0, 26, 58, 0.8)', borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: '#CBD5E1', font: { size: 10 } } } }
+          }
+        });
+      }
+
+      // 4. Cumplimiento SLA (Doughnut)
+      const canvasSla = document.getElementById('chartDesinstSla');
+      if (canvasSla) {
+        this.charts.desinstSla = new Chart(canvasSla, {
+          type: 'doughnut',
+          data: {
+            labels: ['Dentro SLA', 'Fuera SLA'],
+            datasets: [{
+              data: [slaSi, slaNo],
+              backgroundColor: [this.colors.green, this.colors.red],
+              borderColor: 'rgba(0, 26, 58, 0.8)', borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, cutout: '70%',
+            plugins: { legend: { position: 'bottom', labels: { color: '#CBD5E1', font: { size: 10 } } } }
+          }
+        });
+      }
+
+      // 5. Tendencia Mensual (Línea)
+      const canvasTrend = document.getElementById('chartDesinstTendencia');
+      if (canvasTrend) {
+        const sortedMonths = Object.keys(trendCounts).sort().slice(-12);
+        this.charts.desinstTrend = new Chart(canvasTrend, {
+          type: 'line',
+          data: {
+            labels: sortedMonths,
+            datasets: [{
+              label: 'Desinstalaciones',
+              data: sortedMonths.map(m => trendCounts[m]),
+              borderColor: this.colors.gold,
+              backgroundColor: 'rgba(214, 162, 24, 0.1)',
+              tension: 0.3, fill: true, pointRadius: 4, pointBackgroundColor: this.colors.gold
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+              y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.08)' } }
+            }
+          }
+        });
+      }
+
+      // 6. Zonas (Barra Horizontal)
+      const canvasZonas = document.getElementById('chartDesinstZonas');
+      if (canvasZonas) {
+        const sortedZonas = Object.entries(zonaCounts).sort((a,b) => b[1]-a[1]);
+        this.charts.desinstZonas = new Chart(canvasZonas, {
+          type: 'bar',
+          data: {
+            labels: sortedZonas.map(x => x[0]),
+            datasets: [{
+              label: 'Actividades',
+              data: sortedZonas.map(x => x[1]),
+              backgroundColor: 'rgba(153, 209, 252, 0.75)',
+              borderColor: this.colors.blueLight, borderWidth: 1, borderRadius: 4
+            }]
+          },
+          options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+              y: { ticks: { color: '#FAFAFA', font: { size: 10 } }, grid: { display: false } }
+            }
+          }
+        });
+      }
+
+      // 7. Top 5 Técnicos
+      const canvasTech = document.getElementById('chartDesinstTecnicos');
+      if (canvasTech) {
+        const sortedTechs = Object.entries(techCounts).sort((a,b) => b[1]-a[1]).slice(0, 5);
+        this.charts.desinstTech = new Chart(canvasTech, {
+          type: 'bar',
+          data: {
+            labels: sortedTechs.map(x => x[0]),
+            datasets: [{
+              label: 'Actividades',
+              data: sortedTechs.map(x => x[1]),
+              backgroundColor: 'rgba(20, 50, 125, 0.75)',
+              borderColor: this.colors.blue, borderWidth: 1, borderRadius: 4
+            }]
+          },
+          options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+              y: { ticks: { color: '#FAFAFA', font: { size: 10 } }, grid: { display: false } }
+            }
+          }
+        });
+      }
+
+      // 8. Responsabilidad Incumplimiento (Interactivo)
+      const canvasResp = document.getElementById('chartDesinstResp');
+      if (canvasResp) {
+        const sortedResp = Object.entries(respIncumplimiento).sort((a,b) => b[1]-a[1]).slice(0, 10);
+        this.charts.desinstResp = new Chart(canvasResp, {
+          type: 'bar',
+          data: {
+            labels: sortedResp.map(x => x[0]),
+            datasets: [{
+              label: 'Registros',
+              data: sortedResp.map(x => x[1]),
+              backgroundColor: 'rgba(205, 95, 140, 0.85)',
+              hoverBackgroundColor: 'rgba(205, 95, 140, 1)',
+              borderColor: this.colors.pink, borderWidth: 1, borderRadius: 4
+            }]
+          },
+          options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            onClick: (evt, elements) => {
+              if (elements.length > 0) {
+                const idx = elements[0].index;
+                const respLabel = sortedResp[idx][0];
+                const typeRows = respIncumplimientoRows[respLabel] || [];
+                this.openKpiModal(`Responsable Incumplimiento: ${respLabel}`, typeRows);
+              }
+            },
+            onHover: (evt, elements) => {
+              canvasResp.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+            },
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+              y: { ticks: { color: '#FAFAFA', font: { size: 10 } }, grid: { display: false } }
+            }
+          }
+        });
+      }
     } else if (this.activeSubTab === 'publicidad') {
       // ════ TAB DE PUBLICIDAD: ELEMENTOS INSTALADOS, NO-INSTALACION, TIPOLOGIA, ESTADO VISITA ════
 
@@ -1351,27 +1691,22 @@ class IndicatorsView {
             datasets: [{
               label: 'Cantidad Instalada',
               data: [marquesinaCount, cartelCount, stickerVidrioCount, stickerMuroCount, habladorCount],
-              backgroundColor: this.colors.gold,
-              borderColor: 'rgba(214, 162, 24, 0.9)',
+              backgroundColor: 'rgba(214, 162, 24, 0.85)',
+              borderColor: this.colors.gold,
               borderWidth: 1,
-              borderRadius: 6
+              borderRadius: 4
             }]
           },
           options: {
+            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
               legend: { display: false }
             },
             scales: {
-              x: {
-                ticks: {
-                  color: '#94a3b8',
-                  font: { size: 10, weight: '500' }
-                },
-                grid: { display: false }
-              },
-              y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } }
+              x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+              y: { ticks: { color: '#94a3b8', font: { size: 10, weight: '500' } }, grid: { display: false } }
             }
           }
         });
@@ -1456,7 +1791,7 @@ class IndicatorsView {
           .filter(t => tipologiaCounts[t])
           .map(t => [t, tipologiaCounts[t]]);
         this.charts.tipologia = new Chart(canvasTipo, {
-          type: 'doughnut',
+          type: 'pie',
           data: {
             labels: entries.map(e => e[0]),
             datasets: [{
@@ -1470,9 +1805,8 @@ class IndicatorsView {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-              legend: { position: 'right', labels: { color: '#CBD5E1', font: { size: 10 } } }
-            },
-            cutout: '55%'
+              legend: { position: 'bottom', labels: { color: '#CBD5E1', font: { size: 10 } } }
+            }
           }
         });
       }
@@ -1498,7 +1832,7 @@ class IndicatorsView {
             plugins: {
               legend: { position: 'right', labels: { color: '#CBD5E1', font: { size: 10 } } }
             },
-            cutout: '55%'
+            cutout: '65%', circumference: 180, rotation: -90
           }
         });
       }
@@ -1508,14 +1842,14 @@ class IndicatorsView {
       if (canvasZona) {
         const entries = Object.entries(zonaCounts).filter(e => e[0] !== 'SIN ZONA').sort((a, b) => b[1] - a[1]);
         this.charts.zonaPub = new Chart(canvasZona, {
-          type: 'doughnut',
+          type: 'polarArea',
           data: {
             labels: entries.map(e => e[0]),
             datasets: [{
               data: entries.map(e => e[1]),
               backgroundColor: [this.colors.blue, this.colors.gold, this.colors.green, this.colors.pink, this.colors.yellow, this.colors.grey],
               borderColor: 'rgba(0, 26, 58, 0.8)',
-              borderWidth: 2
+              borderWidth: 1
             }]
           },
           options: {
@@ -1524,7 +1858,7 @@ class IndicatorsView {
             plugins: {
               legend: { position: 'right', labels: { color: '#CBD5E1', font: { size: 10 } } }
             },
-            cutout: '55%'
+            scales: { r: { ticks: { display: false }, grid: { color: 'rgba(255,255,255,0.1)' } } }
           }
         });
       }
@@ -1577,7 +1911,7 @@ class IndicatorsView {
         const total = ambosCount + soloCount;
 
         this.charts.comparativoPub = new Chart(canvasCompPub, {
-          type: 'doughnut',
+          type: 'pie',
           data: {
             labels: ['Publicidad y Capacitación', 'Solo Publicidad'],
             datasets: [{
@@ -1591,7 +1925,7 @@ class IndicatorsView {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-              legend: { position: 'right', labels: { color: '#CBD5E1', font: { size: 10 } } },
+              legend: { position: 'bottom', labels: { color: '#CBD5E1', font: { size: 10 } } },
               tooltip: {
                 callbacks: {
                   label: (context) => {
@@ -1601,8 +1935,7 @@ class IndicatorsView {
                   }
                 }
               }
-            },
-            cutout: '55%'
+            }
           }
         });
       }
@@ -1611,9 +1944,13 @@ class IndicatorsView {
       const canvasTiposPub = document.getElementById('chartTiposSolicitudPublicidad');
       if (canvasTiposPub) {
         const counts = {};
+        const rowsByTipoSol = {};
+        
         rows.forEach(r => {
           const name = this.getRequestType(r) || 'SIN ESPECIFICAR';
           counts[name] = (counts[name] || 0) + 1;
+          if (!rowsByTipoSol[name]) rowsByTipoSol[name] = [];
+          rowsByTipoSol[name].push(r);
         });
 
         const sortedTypes = Object.entries(counts).sort((a, b) => b[1] - a[1]);
@@ -1626,6 +1963,7 @@ class IndicatorsView {
               label: 'Registros',
               data: sortedTypes.map(x => x[1]),
               backgroundColor: 'rgba(214, 162, 24, 0.75)',
+              hoverBackgroundColor: 'rgba(214, 162, 24, 1)',
               borderColor: this.colors.gold,
               borderWidth: 1,
               borderRadius: 4
@@ -1635,6 +1973,17 @@ class IndicatorsView {
             responsive: true,
             maintainAspectRatio: false,
             indexAxis: 'y',
+            onClick: (evt, elements) => {
+              if (elements.length > 0) {
+                const idx = elements[0].index;
+                const reqTypeLabel = sortedTypes[idx][0];
+                const typeRows = rowsByTipoSol[reqTypeLabel] || [];
+                this.openKpiModal(`Tipo Solicitud: ${reqTypeLabel}`, typeRows);
+              }
+            },
+            onHover: (evt, elements) => {
+              canvasTiposPub.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+            },
             plugins: {
               legend: { display: false }
             },
@@ -1672,12 +2021,13 @@ class IndicatorsView {
             }]
           },
           options: {
+            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-              x: { ticks: { color: '#94a3b8', font: { size: 9 }, maxRotation: 45, minRotation: 45 }, grid: { display: false } },
-              y: { ticks: { color: '#FAFAFA', font: { size: 9.5 }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.06)' } }
+              x: { ticks: { color: '#FAFAFA', font: { size: 9.5 }, stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.06)' } },
+              y: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { display: false } }
             }
           }
         });
@@ -1719,7 +2069,7 @@ class IndicatorsView {
                 }
               }
             },
-            cutout: '65%'
+            cutout: '65%', circumference: 180, rotation: -90
           }
         });
       }
@@ -1762,7 +2112,7 @@ class IndicatorsView {
               backgroundColor: 'rgba(214, 162, 24, 0.2)',
               borderWidth: 2,
               fill: true,
-              tension: 0.3,
+              tension: 0.4,
               pointBackgroundColor: this.colors.gold
             }]
           },
@@ -1779,239 +2129,176 @@ class IndicatorsView {
       }
 
     } else if (this.activeSubTab === 'capacitacion') {
-      // ════ TAB DE CAPACITACIÓN: FACTURABLES VS GARANTÍAS, TIPOLOGÍA, ESTADOS ════
-
       let facturables = 0;
       let garantias = 0;
       const tipologiaCounts = {};
-      const estadoCapacitacion = {};
-      const causalCapacitacion = {};
+      const estadoCounts = {};
+      const causalCounts = {};
+      const tipoSolCounts = {};
+      let slaSi = 0, slaNo = 0;
+      
+      const techCounts = {};
+      const zonaCounts = {};
 
       rows.forEach(r => {
-        // Relación Facturables vs Garantías
         const forma = (r['FORMA DE ATENCION'] || '').trim().toUpperCase();
+        let isGarantia = false;
         if (forma === 'VISITA TECNICA' || forma === 'SOPORTE TELEFONICO') {
           facturables++;
         } else if (forma === 'GARANTIA') {
           garantias++;
+          isGarantia = true;
+        } else {
+          facturables++; // default si está vacío
         }
 
-        // Tipología (normalizada igual que en publicidad: PRINCIPAL / INTERMEDIA / LEJANA)
         const tipo = this.normalizeTipologia(r['TIPOLOGIA']);
         tipologiaCounts[tipo] = (tipologiaCounts[tipo] || 0) + 1;
 
-        // Estado y Causal
         const est = this.getRecordVisitStatus(r);
-        estadoCapacitacion[est] = (estadoCapacitacion[est] || 0) + 1;
+        estadoCounts[est] = (estadoCounts[est] || 0) + 1;
 
         const causalVal = (r['CAUSAL DE ESTADO'] || '').trim();
         if (causalVal && causalVal !== 'N/A' && causalVal !== '—' && causalVal !== 'null') {
-          causalCapacitacion[causalVal] = (causalCapacitacion[causalVal] || 0) + 1;
+          causalCounts[causalVal] = (causalCounts[causalVal] || 0) + 1;
         }
+
+        const name = this.getRequestType(r) || 'SIN ESPECIFICAR';
+        tipoSolCounts[name] = (tipoSolCounts[name] || 0) + 1;
+
+        const vSla = (r[slaField] || '').toString().toUpperCase().trim();
+        if (vSla === 'SI') slaSi++;
+        if (vSla === 'NO') slaNo++;
+
+        const tec = (r['TECNICO'] || r['INGENIERO DE CAMPO'] || r['TÉCNICO'] || 'NO INDICADO').trim();
+        techCounts[tec] = (techCounts[tec] || 0) + 1;
+
+        const zona = (r['ZONA LINEACOM'] || r['COORDINADOR ENCARGADO'] || 'SIN ZONA').trim().toUpperCase();
+        zonaCounts[zona] = (zonaCounts[zona] || 0) + 1;
       });
 
-      // 1. Gráfico Facturables vs Garantías
-      const canvasFact = document.getElementById('chartFacturablesGarantias');
-      if (canvasFact) {
-        const total = facturables + garantias;
-
-        this.charts.facturables = new Chart(canvasFact, {
+      // 1. Facturables vs Garantías
+      const cFact = document.getElementById('chartCapFactVsGar');
+      if (cFact) {
+        this.charts.capFact = new Chart(cFact, {
           type: 'doughnut',
           data: {
             labels: ['Atención Facturable', 'Garantías (Reentren.)'],
-            datasets: [{
-              data: [facturables, garantias],
-              backgroundColor: [this.colors.blue, this.colors.yellow],
-              borderColor: 'rgba(0, 26, 58, 0.8)',
-              borderWidth: 2
-            }]
+            datasets: [{ data: [facturables, garantias], backgroundColor: [this.colors.blue, this.colors.yellow], borderColor: 'rgba(0, 26, 58, 0.8)', borderWidth: 2 }]
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { position: 'bottom', labels: { color: '#CBD5E1', font: { size: 10 } } },
-              tooltip: {
-                callbacks: {
-                  label: (context) => {
-                    const val = context.raw || 0;
-                    const pct = total ? ((val / total) * 100).toFixed(1) + '%' : '0%';
-                    return ` ${context.label}: ${val} (${pct})`;
-                  }
-                }
-              }
-            },
-            cutout: '65%'
-          }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#CBD5E1', font: { size: 10 } } } }, cutout: '65%', circumference: 180, rotation: -90 }
         });
       }
 
-      // 2. Gráfico Tipología Capacitación (mismo orden fijo y colores que publicidad)
-      const canvasTipoCap = document.getElementById('chartTipologiaCapacitacion');
-      if (canvasTipoCap) {
-        const tipoOrder = ['PRINCIPAL', 'INTERMEDIA', 'LEJANA'];
-        const tipoColors = [this.colors.blue, this.colors.gold, this.colors.green];
-        const entries = tipoOrder
-          .filter(t => tipologiaCounts[t])
-          .map(t => [t, tipologiaCounts[t]]);
-        this.charts.tipologiaCap = new Chart(canvasTipoCap, {
-          type: 'doughnut',
+      // 2. Tipos de Solicitud
+      const cTipSol = document.getElementById('chartCapTiposSol');
+      if (cTipSol) {
+        const sorted = Object.entries(tipoSolCounts).sort((a,b) => b[1] - a[1]).slice(0, 5);
+        this.charts.capTipSol = new Chart(cTipSol, {
+          type: 'polarArea',
+          data: {
+            labels: sorted.map(x => x[0]),
+            datasets: [{ data: sorted.map(x => x[1]), backgroundColor: [this.colors.blue, this.colors.gold, this.colors.green, this.colors.red, '#94a3b8'], borderColor: 'rgba(0, 26, 58, 0.8)', borderWidth: 1 }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#CBD5E1', font: { size: 9 } } } }, scales: { r: { ticks: { display: false }, grid: { color: 'rgba(255,255,255,0.1)' } } } }
+        });
+      }
+
+      // 3. Distribución por Tipología
+      const cTipol = document.getElementById('chartCapTipologia');
+      if (cTipol) {
+        const order = ['PRINCIPAL', 'INTERMEDIA', 'LEJANA'];
+        const colors = [this.colors.blue, this.colors.gold, this.colors.green];
+        const entries = order.filter(t => tipologiaCounts[t]).map(t => [t, tipologiaCounts[t]]);
+        this.charts.capTipol = new Chart(cTipol, {
+          type: 'pie',
           data: {
             labels: entries.map(e => e[0]),
-            datasets: [{
-              data: entries.map(e => e[1]),
-              backgroundColor: entries.map((_, i) => tipoColors[tipoOrder.indexOf(entries[i][0])]),
-              borderColor: 'rgba(0, 26, 58, 0.8)',
-              borderWidth: 2
-            }]
+            datasets: [{ data: entries.map(e => e[1]), backgroundColor: entries.map((_, i) => colors[order.indexOf(entries[i][0])]), borderColor: 'rgba(0, 26, 58, 0.8)', borderWidth: 2 }]
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { position: 'right', labels: { color: '#CBD5E1', font: { size: 10 } } }
-            },
-            cutout: '55%'
-          }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#CBD5E1', font: { size: 10 } } } } }
         });
       }
 
-      // 3. Gráfico de Estados y Causal de Falla en Capacitación
-      const canvasEstCap = document.getElementById('chartEstadoCapacitacion');
-      if (canvasEstCap) {
-        // Unir estados y causas de fallo importantes para visualización operativa
-        // Se excluye 'SIN REGISTRO' igual que en el gráfico de Estado de Visita de publicidad
-        const chartData = {};
-        Object.entries(estadoCapacitacion).filter(([k]) => k !== 'SIN REGISTRO').forEach(([k, v]) => {
-          chartData[`Estado: ${k}`] = v;
-        });
-        Object.entries(causalCapacitacion).sort((a, b) => b[1] - a[1]).slice(0, 5).forEach(([k, v]) => {
-          chartData[`Causal: ${k}`] = v;
-        });
-
-        const sortedEntries = Object.entries(chartData).sort((a, b) => b[1] - a[1]).slice(0, 10);
-
-        this.charts.estCap = new Chart(canvasEstCap, {
-          type: 'bar',
-          data: {
-            labels: sortedEntries.map(e => e[0]),
-            datasets: [{
-              label: 'Cantidad',
-              data: sortedEntries.map(e => e[1]),
-              backgroundColor: 'rgba(0, 135, 110, 0.75)',
-              borderColor: this.colors.green,
-              borderWidth: 1,
-              borderRadius: 4
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                backgroundColor: this.colors.blueDark,
-                titleColor: this.colors.gold,
-                bodyColor: '#FAFAFA',
-                padding: 10,
-                cornerRadius: 8
-              }
-            },
-            scales: {
-              x: {
-                ticks: {
-                  color: '#94a3b8',
-                  font: { size: 9 },
-                  callback: function (value) {
-                    const label = this.getLabelForValue(value);
-                    if (label && label.length > 20) {
-                      return label.substring(0, 20) + '...';
-                    }
-                    return label;
-                  }
-                },
-                grid: { display: false }
-              },
-              y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } }
-            }
-          }
-        });
-      }
-
-      // 4. Gráfico Comparativo: Publicidad y Capacitación vs Solo Capacitación
-      const canvasCompCap = document.getElementById('chartComparativoCapacitacion');
-      if (canvasCompCap) {
-        const ambosCount = rows.filter(r => this.classifyRecord(r) === 'ambos').length;
-        const soloCount = rows.filter(r => this.classifyRecord(r) === 'capacitacion').length;
-        const total = ambosCount + soloCount;
-
-        this.charts.comparativoCap = new Chart(canvasCompCap, {
+      // 4. Cumplimiento SLA
+      const cSla = document.getElementById('chartCapSla');
+      if (cSla) {
+        this.charts.capSla = new Chart(cSla, {
           type: 'doughnut',
           data: {
-            labels: ['Publicidad y Capacitación', 'Solo Capacitación'],
-            datasets: [{
-              data: [ambosCount, soloCount],
-              backgroundColor: [this.colors.blue, this.colors.yellow],
-              borderColor: 'rgba(0, 26, 58, 0.8)',
-              borderWidth: 2
-            }]
+            labels: ['Cumple SLA', 'No Cumple SLA'],
+            datasets: [{ data: [slaSi, slaNo], backgroundColor: [this.colors.green, this.colors.red], borderColor: 'rgba(0, 26, 58, 0.8)', borderWidth: 2 }]
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { position: 'right', labels: { color: '#CBD5E1', font: { size: 10 } } },
-              tooltip: {
-                callbacks: {
-                  label: (context) => {
-                    const val = context.raw || 0;
-                    const pct = total ? ((val / total) * 100).toFixed(1) + '%' : '0%';
-                    return ` ${context.label}: ${val.toLocaleString('es-CO')} (${pct})`;
-                  }
-                }
-              }
-            },
-            cutout: '55%'
-          }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#CBD5E1', font: { size: 10 } } } }, cutout: '65%', circumference: 180, rotation: -90 }
         });
       }
 
-      // 5. Gráfico Detalle de Solicitudes (Nombres Reales)
-      const canvasTiposCap = document.getElementById('chartTiposSolicitudCapacitacion');
-      if (canvasTiposCap) {
-        const counts = {};
-        rows.forEach(r => {
-          const name = this.getRequestType(r) || 'SIN ESPECIFICAR';
-          counts[name] = (counts[name] || 0) + 1;
-        });
-
-        const sortedTypes = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-
-        this.charts.tiposSolicitudCap = new Chart(canvasTiposCap, {
+      // 5. Estado Final Visita
+      const cEst = document.getElementById('chartCapEstado');
+      if (cEst) {
+        const sorted = Object.entries(estadoCounts).sort((a,b) => b[1] - a[1]).slice(0,5);
+        this.charts.capEst = new Chart(cEst, {
           type: 'bar',
           data: {
-            labels: sortedTypes.map(x => x[0]),
+            labels: sorted.map(x => x[0]),
+            datasets: [{ data: sorted.map(x => x[1]), backgroundColor: 'rgba(0, 135, 110, 0.75)', borderColor: this.colors.green, borderWidth: 1, borderRadius: 4 }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#94a3b8', font: {size:9} }, grid: { display: false } }, y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } } } }
+        });
+      }
+
+      // 6. Solo Cap vs Cap y Pub
+      const cAmbos = document.getElementById('chartCapAmbos');
+      if (cAmbos) {
+        const ambosCount = rows.filter(r => this.classifyRecord(r) === 'ambos').length;
+        const soloCount = rows.filter(r => this.classifyRecord(r) === 'capacitacion').length;
+        this.charts.capAmbos = new Chart(cAmbos, {
+          type: 'bar',
+          data: {
+            labels: ['Solo Cap.', 'Cap. + Pub.'],
+            datasets: [{ label: 'Registros', data: [soloCount, ambosCount], backgroundColor: ['rgba(0, 77, 184, 0.75)', 'rgba(214, 162, 24, 0.75)'], borderColor: [this.colors.blue, this.colors.yellow], borderWidth: 1, borderRadius: 4 }]
+          },
+          options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } }, y: { ticks: { color: '#FAFAFA', font: {size: 9} }, grid: { display: false } } } }
+        });
+      }
+
+      // 7. Top Técnicos (Volumen)
+      const cTech = document.getElementById('chartCapTecnicos');
+      if (cTech) {
+        const sorted = Object.entries(techCounts).sort((a,b) => b[1] - a[1]).slice(0, 5);
+        this.charts.capTech = new Chart(cTech, {
+          type: 'bar',
+          data: {
+            labels: sorted.map(x => x[0]),
+            datasets: [{ label: 'Actividades', data: sorted.map(x => x[1]), backgroundColor: 'rgba(0, 135, 110, 0.75)', borderColor: this.colors.green, borderWidth: 1, borderRadius: 4 }]
+          },
+          options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#94a3b8', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.06)' } }, y: { ticks: { color: '#FAFAFA', font: {size: 9} }, grid: { display: false } } } }
+        });
+      }
+
+      // 8. Atenciones por Zona Lineacom
+      const cZona = document.getElementById('chartCapZonas');
+      if (cZona) {
+        const sorted = Object.entries(zonaCounts).sort((a,b) => b[1] - a[1]).slice(0, 5);
+        this.charts.capZona = new Chart(cZona, {
+          type: 'polarArea',
+          data: {
+            labels: sorted.map(x => x[0]),
             datasets: [{
-              label: 'Registros',
-              data: sortedTypes.map(x => x[1]),
-              backgroundColor: 'rgba(0, 135, 110, 0.75)',
-              borderColor: this.colors.green,
-              borderWidth: 1,
-              borderRadius: 4
+              label: 'Actividades', 
+              data: sorted.map(x => x[1]), 
+              backgroundColor: [
+                'rgba(0, 77, 184, 0.7)', 
+                'rgba(214, 162, 24, 0.7)', 
+                'rgba(0, 135, 110, 0.7)', 
+                'rgba(205, 50, 50, 0.7)', 
+                'rgba(148, 163, 184, 0.7)'
+              ], 
+              borderColor: 'rgba(0, 26, 58, 0.8)', 
+              borderWidth: 1
             }]
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: 'y',
-            plugins: {
-              legend: { display: false }
-            },
-            scales: {
-              x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-              y: { ticks: { color: '#FAFAFA', font: { size: 9.5 } }, grid: { display: false } }
-            }
-          }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#CBD5E1', font: {size:9} } } }, scales: { r: { ticks: { display: false }, grid: { color: 'rgba(255,255,255,0.1)' } } } }
         });
       }
     }
@@ -2411,7 +2698,7 @@ class IndicatorsView {
         respCounts[resp] = (respCounts[resp] || 0) + 1;
       });
 
-      const labels = Object.keys(respCounts).sort((a,b) => respCounts[b] - respCounts[a]);
+      const labels = Object.keys(respCounts).sort((a, b) => respCounts[b] - respCounts[a]);
       const dataVals = labels.map(l => respCounts[l]);
 
       const ctx = document.getElementById('kpiModalFallasChart');
@@ -2442,7 +2729,7 @@ class IndicatorsView {
 
       const filterContainer = document.getElementById('kpiModalFilters');
       let btnHtml = `<button class="btn-modal-filter active" data-filter="ALL" style="padding: 6px 12px; border-radius: 20px; border: 1px solid var(--bdb-gold); background: var(--bdb-gold); color: #000; font-weight: bold; cursor: pointer;">Todos (${recordsList.length})</button>`;
-      
+
       labels.forEach(l => {
         btnHtml += `<button class="btn-modal-filter" data-filter="${l}" style="padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #fff; cursor: pointer;">${l} (${respCounts[l]})</button>`;
       });
@@ -2462,14 +2749,14 @@ class IndicatorsView {
           e.target.classList.add('active');
 
           const filter = e.target.getAttribute('data-filter');
-          currentFilteredRecords = filter === 'ALL' 
-            ? recordsList 
+          currentFilteredRecords = filter === 'ALL'
+            ? recordsList
             : recordsList.filter(r => {
-                let resp = (r['RESPONSABLE INCUMPLIMIENTO'] || '').trim().toUpperCase();
-                if (!resp) resp = 'NO INDICADO';
-                return resp === filter;
-              });
-          
+              let resp = (r['RESPONSABLE INCUMPLIMIENTO'] || '').trim().toUpperCase();
+              if (!resp) resp = 'NO INDICADO';
+              return resp === filter;
+            });
+
           renderRows(currentFilteredRecords);
         }
       });
@@ -2486,9 +2773,9 @@ class IndicatorsView {
       if (this.exportExcelCallback && currentFilteredRecords.length > 0) {
         let safeName = title.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ\s]/g, '').replace(/\s+/g, '_').substring(0, 50);
         if (isFallasModal) {
-           const activeFilterBtn = document.querySelector('#kpiModalFilters button.active');
-           const filterVal = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'ALL';
-           safeName += '_' + filterVal.replace(/[^a-zA-Z0-9]/g, '_');
+          const activeFilterBtn = document.querySelector('#kpiModalFilters button.active');
+          const filterVal = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'ALL';
+          safeName += '_' + filterVal.replace(/[^a-zA-Z0-9]/g, '_');
         }
         this.exportExcelCallback(currentFilteredRecords, safeName || 'Detalle_Modal');
       } else if (currentFilteredRecords.length === 0) {
@@ -2621,12 +2908,12 @@ class IndicatorsView {
               <div class="metadata-item" style="grid-column: 1 / -1;">
                 <label>Responsable de Retraso</label>
                 <span>${(() => {
-                  const isDelayed = (record['CUMPLE SLA'] || record['DENTRO DE LOS SLA'] || '').toString().toUpperCase() === 'NO';
-                  const respInc = record['RESPONSABLE INCUMPLIMIENTO'] || '';
-                  if (!respInc && isDelayed) return '<span style="color: #ef4444; font-weight: 600;">⚠️ No se indicó responsable en Sytex</span>';
-                  if (!respInc && !isDelayed) return 'Sin retrasos / No aplica';
-                  return respInc;
-                })()}</span>
+        const isDelayed = (record['CUMPLE SLA'] || record['DENTRO DE LOS SLA'] || '').toString().toUpperCase() === 'NO';
+        const respInc = record['RESPONSABLE INCUMPLIMIENTO'] || '';
+        if (!respInc && isDelayed) return '<span style="color: #ef4444; font-weight: 600;">⚠️ No se indicó responsable en Sytex</span>';
+        if (!respInc && !isDelayed) return 'Sin retrasos / No aplica';
+        return respInc;
+      })()}</span>
               </div>
               <div class="metadata-item" style="grid-column: 1 / -1;">
                 <label>Observaciones o Novedades Adicionales</label>

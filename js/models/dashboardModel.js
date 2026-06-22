@@ -16,7 +16,9 @@ class DashboardModel {
       estadoVisita: [],
       punto: '',
       ta: '',
-      fo: ''
+      fo: '',
+      dateStart: '',
+      dateEnd: ''
     };
 
     // Términos de búsqueda por sub-sección
@@ -329,6 +331,30 @@ class DashboardModel {
         const foVal = slicers.fo.trim().toUpperCase();
         const hasFO = r['FORMS'].some(f => (f['FORM_CODE'] || '').toString().trim().toUpperCase().includes(foVal));
         if (!hasFO) return false;
+      }
+
+      // 5.7 Filtro por Fecha de Solicitud (Desde/Hasta)
+      if (slicers.dateStart || slicers.dateEnd) {
+        const dateVal = (tab === 'desinstalacion') ? r['FECHA DE APERTURA (DD/MM/AAAA)'] : r['FECHA LISTA'];
+        const recordDate = this.parseDate(dateVal);
+        if (recordDate) {
+          // Normalizamos la fecha del registro ignorando la hora localmente
+          const rDateOnly = new Date(recordDate.getFullYear(), recordDate.getMonth(), recordDate.getDate()).getTime();
+          
+          if (slicers.dateStart) {
+            const [y, m, d] = slicers.dateStart.split('-');
+            const sDate = new Date(parseInt(y), parseInt(m) - 1, parseInt(d)).getTime();
+            if (rDateOnly < sDate) return false;
+          }
+          if (slicers.dateEnd) {
+            const [y, m, d] = slicers.dateEnd.split('-');
+            const eDate = new Date(parseInt(y), parseInt(m) - 1, parseInt(d)).getTime();
+            if (rDateOnly > eDate) return false;
+          }
+        } else {
+          // Si no tiene fecha parseable pero hay filtros de fecha exigidos, se descarta
+          return false;
+        }
       }
 
       // 6. Búsqueda de texto libre
